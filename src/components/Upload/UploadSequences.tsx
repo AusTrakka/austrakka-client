@@ -68,15 +68,17 @@ import { UploadErrorMessages } from './Constants/UploadMessages';
 import CsvErrorsTable from './CsvErrorsTable';
 import FileDragDrop from './FileDragDrop';
 import FileUploadButton from './FileUploadButton';
-import {
-  validateAllHaveSampleNamesWithOneFileOnly,
-  validateEvenNumberOfFiles,
-  validateNoDuplicateFilenames,
-} from './fileUploadValidators';
 import UploadPairedSequenceRow from './UploadPairedSequenceRow';
 import UploadSequencesHelp from './UploadSequencesHelp';
 import UploadSingleFastaContigRow from './UploadSingleFastaContigRow';
 import UploadSingleSequenceRow from './UploadSingleSequenceRow';
+
+// There are effectively two validation steps for sequence files:
+// 1. The FileDragDrop component validates basic properties like file size and allowed suffixes
+// 2. We attempt to parse the file list according to the sequence type, extracting Seq_IDs and e.g. pairing files
+// Either of these steps can result in a failure where where we show an error popup and clear FileDragDrop.
+// The second validation step is handled differently (and better) if there is a supplied CSV, and will not reject
+// the files wholesale, instead basing the expected table of files on the CSV.
 
 const csvFileValidFormats = {
   csv: 'text/csv',
@@ -89,15 +91,6 @@ const uploadRowTypes: Record<SeqType, Function> = {
   [SeqType.FastqOnt]: UploadSingleSequenceRow,
   [SeqType.FastaAsm]: UploadSingleSequenceRow,
   [SeqType.FastaCns]: UploadSingleFastaContigRow,
-};
-
-const validatorsPerSeqType = {
-  [SeqType.FastqIllPe]: [validateEvenNumberOfFiles, validateNoDuplicateFilenames],
-  [SeqType.FastqIllSe]: [validateNoDuplicateFilenames, validateAllHaveSampleNamesWithOneFileOnly],
-  [SeqType.FastqOnt]: [validateNoDuplicateFilenames, validateAllHaveSampleNamesWithOneFileOnly],
-  [SeqType.FastaAsm]: [validateNoDuplicateFilenames, validateAllHaveSampleNamesWithOneFileOnly],
-  // FastaCns is a special case: validation is applied during file-splitting transform
-  [SeqType.FastaCns]: [],
 };
 
 const fileTransformPerSeqType = (seqType: SeqType) =>
@@ -143,6 +136,20 @@ function UploadSequences() {
   const { token, tokenLoading } = useApi();
   const { enqueueSnackbar } = useSnackbar();
 
+  const handleUploadError = useCallback((e: unknown) => {
+    if (e instanceof Error) {
+      enqueueSnackbar(e.message, { variant: 'error', autoHideDuration: 8000 });
+    } else {
+      // biome-ignore lint/suspicious/noConsole: log error hidden in UI
+      console.error('Unexpected non-Error thrown:', e);
+      setPageErrorMsg(UploadErrorMessages.UNEXPECTED_ERROR);
+    }
+  }, [enqueueSnackbar]);
+  
+  const handleClearFiles = useCallback(() => {
+    fileDragDropRef.current?.clearFiles();
+  }, []);
+  
   const updateRow = (newSur: SeqUploadRow) => {
     setSeqUploadRows((st) =>
       st.map((sur) => {
@@ -205,18 +212,14 @@ function UploadSequences() {
           setUseCsvFile(true);
         }
       } catch (e: unknown) {
-        if (e instanceof Error) {
-          enqueueSnackbar(e.message, { variant: 'error', autoHideDuration: 8000 });
-        } else {
-          setPageErrorMsg(UploadErrorMessages.UNEXPECTED_ERROR);
-        }
+        handleUploadError(e);
         setFileListingCsv([]);
         setUseCsvFile(false);
       }
     }
 
     void processPairingFile();
-  }, [fileListingCsv, selectedSeqType, enqueueSnackbar]);
+  }, [fileListingCsv, selectedSeqType, handleUploadError]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
@@ -243,6 +246,9 @@ function UploadSequences() {
   }, [seqUploadRows, seqUploadRowStates, selectedCreateSampleRecords]);
 
   useEffect(() => {
+    // This step creates the table of expected uploads based on files, and asserts that the files
+    // satisfy basic conditions (filenames parseable, pairable, etc).
+
     const rowType = uploadRowTypes[selectedSeqType];
     let rows: SeqUploadRow[];
 
@@ -257,7 +263,14 @@ function UploadSequences() {
           setCsvErrors([]);
         }
       } else {
-        rows = createPairedSeqUploadRows(files, validSuffixes(selectedSeqType));
+        // If this throws an error, we've failed validation while parsing filenames / read pairs
+        try {
+          rows = createPairedSeqUploadRows(files, validSuffixes(selectedSeqType));
+        } catch (e: unknown) {
+          handleUploadError(e);
+          handleClearFiles();
+          return;
+        }
       }
     } else if (rowType === UploadSingleSequenceRow) {
       if (useCsvFile && csvUploadSingles.length > 0) {
@@ -274,14 +287,29 @@ function UploadSequences() {
           setCsvErrors([]);
         }
       } else {
-        rows = createSingleSeqUploadRows(files, selectedSeqType, validSuffixes(selectedSeqType));
+        // If this throws an error, we've failed validation while parsing filenames / read pairs
+        try {
+          rows = createSingleSeqUploadRows(files, selectedSeqType, validSuffixes(selectedSeqType));
+        } catch (e: unknown) {
+          handleUploadError(e);
+          handleClearFiles();
+          return;
+        }
       }
     } else {
-      // this will be fasta contig
-      rows = createSingleSeqUploadRows(files, selectedSeqType, validSuffixes(selectedSeqType));
+      // This will be fasta-cns and is not expected to throw an error at this stage
+      // If this throws an error, we've failed validation while parsing generated filenames
+      // It would be possible to remove the "transform" logic from FileDragDrop and do that here
+      try {
+        rows = createSingleSeqUploadRows(files, selectedSeqType, validSuffixes(selectedSeqType));
+      } catch (e: unknown) {
+        handleUploadError(e);
+        handleClearFiles();
+        return;
+      }
     }
     setSeqUploadRows(rows);
-  }, [files, selectedSeqType, csvUploadPairs, csvUploadSingles, useCsvFile]);
+  }, [files, selectedSeqType, csvUploadPairs, csvUploadSingles, useCsvFile, handleUploadError, handleClearFiles]);
 
   const handleSelectSeqType = (seqTypeStr: string) => {
     const seqType = getEnumByValue(SeqType, seqTypeStr) as SeqType;
@@ -310,10 +338,6 @@ function UploadSequences() {
   const fileDragDropOnClear = useCallback(() => {
     setDismissedCsvItems(new Set());
   }, []);
-
-  const handleClearSampleFiles = () => {
-    fileDragDropRef.current?.clearFiles();
-  };
 
   const showCsvFileUpload = () => {
     return selectedSeqType !== SeqType.FastaCns;
@@ -749,7 +773,6 @@ function UploadSequences() {
               setFiles={setFiles}
               validFormats={validFormats(selectedSeqType)}
               multiple
-              customValidators={validatorsPerSeqType[selectedSeqType]}
               fileTransform={fileTransformPerSeqType(selectedSeqType)}
               onClear={fileDragDropOnClear}
             />
@@ -870,7 +893,7 @@ function UploadSequences() {
                     <Button
                       variant="outlined"
                       color="error"
-                      onClick={handleClearSampleFiles}
+                      onClick={handleClearFiles}
                       disabled={uploadInProgress()}
                     >
                       Clear Files

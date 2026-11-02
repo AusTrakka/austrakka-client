@@ -20,6 +20,7 @@ import {
   validateFileSizeLimit,
   validateFilesAreOfType,
   validateSingleFile,
+  validateNoDuplicateFilenames,
 } from './fileUploadValidators';
 
 interface FileDragDropProps {
@@ -107,7 +108,9 @@ const FileDragDrop = forwardRef<any, FileDragDropProps>(
     // Validate files and apply transform whenever new files are added, or validation criteria change
     useEffect(() => {
       const getBuiltInValidators = (): CustomUploadValidator[] => {
-        const validators: CustomUploadValidator[] = [];
+        // For now we have no use-case for multiple identical filenames; if we do this could be a flag
+        // or made back into a custom validator and passed in
+        const validators: CustomUploadValidator[] = [validateNoDuplicateFilenames];
         if (!multiple) {
           validators.push(validateSingleFile);
         }

@@ -30,12 +30,19 @@ const validFormatsPerClass: Record<string, Record<string, string>> = {
     '.fastq': '',
     '.fq.gz': 'application/x-gzip',
     '.fastq.gz': 'application/x-gzip',
+    '.fq.bz2': 'application/x-gzip',
+    '.fastq.bz2': 'application/x-gzip',
   },
   fasta: {
     '.fa': '',
     '.fasta': '',
+    '.fna': '',
     '.fa.gz': 'application/x-gzip',
     '.fasta.gz': 'application/x-gzip',
+    '.fast.gz': 'application/x-gzip',
+    '.fa.bz2': 'application/x-gzip',
+    '.fasta.bz2': 'application/x-gzip',
+    '.fast.bz2': 'application/x-gzip',
   },
 };
 
