@@ -136,20 +136,23 @@ function UploadSequences() {
   const { token, tokenLoading } = useApi();
   const { enqueueSnackbar } = useSnackbar();
 
-  const handleUploadError = useCallback((e: unknown) => {
-    if (e instanceof Error) {
-      enqueueSnackbar(e.message, { variant: 'error', autoHideDuration: 8000 });
-    } else {
-      // biome-ignore lint/suspicious/noConsole: log error hidden in UI
-      console.error('Unexpected non-Error thrown:', e);
-      setPageErrorMsg(UploadErrorMessages.UNEXPECTED_ERROR);
-    }
-  }, [enqueueSnackbar]);
-  
+  const handleUploadError = useCallback(
+    (e: unknown) => {
+      if (e instanceof Error) {
+        enqueueSnackbar(e.message, { variant: 'error', autoHideDuration: 8000 });
+      } else {
+        // biome-ignore lint/suspicious/noConsole: log error hidden in UI
+        console.error('Unexpected non-Error thrown:', e);
+        setPageErrorMsg(UploadErrorMessages.UNEXPECTED_ERROR);
+      }
+    },
+    [enqueueSnackbar],
+  );
+
   const handleClearFiles = useCallback(() => {
     fileDragDropRef.current?.clearFiles();
   }, []);
-  
+
   const updateRow = (newSur: SeqUploadRow) => {
     setSeqUploadRows((st) =>
       st.map((sur) => {
@@ -309,7 +312,15 @@ function UploadSequences() {
       }
     }
     setSeqUploadRows(rows);
-  }, [files, selectedSeqType, csvUploadPairs, csvUploadSingles, useCsvFile, handleUploadError, handleClearFiles]);
+  }, [
+    files,
+    selectedSeqType,
+    csvUploadPairs,
+    csvUploadSingles,
+    useCsvFile,
+    handleUploadError,
+    handleClearFiles,
+  ]);
 
   const handleSelectSeqType = (seqTypeStr: string) => {
     const seqType = getEnumByValue(SeqType, seqTypeStr) as SeqType;

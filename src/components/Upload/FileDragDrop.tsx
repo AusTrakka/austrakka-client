@@ -19,8 +19,8 @@ import {
   type CustomUploadValidator,
   validateFileSizeLimit,
   validateFilesAreOfType,
-  validateSingleFile,
   validateNoDuplicateFilenames,
+  validateSingleFile,
 } from './fileUploadValidators';
 
 interface FileDragDropProps {

@@ -224,13 +224,6 @@ export const createPairedSeqUploadRowsFromCsv = (
 //  (_\d{3})? - optional like e.g. _001. Note nothing else may follow the read number in this format
 // Most parts are optional so this matches MySample_R1.fastq.gz as well as MySample_S17_L001_R1_001.fastq.gz
 const fastq_ill_paired_regexes = [/^(.+?)(?:_S\d+)?(?:_L\d{3})?[-_.]R?([12])(?:_\d{3})?$/];
-// For single-end, we conservatively strip a suffix if we see R1 or if we see _S12_L001_...
-// We do not however strip just _1, -1, .1.
-const fastq_ill_single_regexes: RegExp[] = [
-  /^(.+?)_R1(?:_\d{3})?$/, // R1 mandatory for this stripping
-  /^(.+?)(?:_S\d+)?_L\d{3}[-_.]R?1(?:_\d{3})?$/, // lane number mandatory for this stripping
-  /^(.+)$/, // default case - whole filename
-];
 
 export const createPairedSeqUploadRows = (
   files: DropFileUpload[],
