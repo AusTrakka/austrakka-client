@@ -219,11 +219,11 @@ export const createPairedSeqUploadRowsFromCsv = (
 // SeqType.FastqIllPe Illumina standard formats capture:
 //  (.*?) - the Seq_ID
 //  (_S\d+)? - optional like e.g. _S23 (sample number); (?:) means non-capturing group,we only capture sample name/read
-//  (_L\d{3})? - optional like e.g. _L001 (lane number)
+//  (_L\d{1,3}(_\d+)?)? - optional like e.g. _L001 or L01_16 (lane number and optionally MGI barcode number)
 //  [-_.]R?[12] - mandatory read number, e.g. _R1, -R1, _1, .R1, etc
 //  (_\d{3})? - optional like e.g. _001. Note nothing else may follow the read number in this format
 // Most parts are optional so this matches MySample_R1.fastq.gz as well as MySample_S17_L001_R1_001.fastq.gz
-const fastq_ill_paired_regexes = [/^(.+?)(?:_S\d+)?(?:_L\d{3})?[-_.][rR]?([12])(?:_\d{3})?$/];
+const fastq_ill_paired_regexes = [/^(.+?)(?:_S\d+)?(?:_L\d{1,3}(?:_\d+)?)?[-_.][rR]?([12])(?:_\d{3})?$/];
 
 export const createPairedSeqUploadRows = (
   files: DropFileUpload[],
