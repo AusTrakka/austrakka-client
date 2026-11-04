@@ -32,6 +32,8 @@ interface UploadSequenceRowProps {
   modeOption: SkipForce;
   owner: string | null;
   sharedProjects: string[];
+  isCsvMode: boolean;
+  isDuplicateSeqId: boolean;
 }
 
 export default function UploadSingleSequenceRow(props: UploadSequenceRowProps) {
@@ -40,6 +42,8 @@ export default function UploadSingleSequenceRow(props: UploadSequenceRowProps) {
   const { modeOption } = props;
   const { owner } = props;
   const { sharedProjects } = props;
+  const { isCsvMode } = props;
+  const { isDuplicateSeqId } = props;
 
   const [seqSubmission, setSeqSubmission] = useState({
     status: LoadingState.IDLE,
@@ -191,13 +195,13 @@ export default function UploadSingleSequenceRow(props: UploadSequenceRowProps) {
   // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     if (seqUploadRow.state === SeqUploadRowState.CreateSample) {
-      handleSampleCreate();
+      void handleSampleCreate();
     }
     if (seqUploadRow.state === SeqUploadRowState.CalculatingHash) {
-      calculateHash();
+      void calculateHash();
     }
     if (seqUploadRow.state === SeqUploadRowState.Uploading) {
-      handleSubmit();
+      void handleSubmit();
     }
   }, [seqUploadRow.state]);
 
@@ -211,20 +215,34 @@ export default function UploadSingleSequenceRow(props: UploadSequenceRowProps) {
   return (
     <>
       <TableCell sx={tableCellStyle}>
-        <FormControl size="small" sx={tableFormControlStyle} variant="standard">
-          <TextField
-            id={`seqid-select-${seqUploadRow.id}`}
-            name="seqid"
+        {isCsvMode ? (
+          <Typography sx={{ paddingTop: '10px', paddingBottom: '10px', marginRight: '40px' }}>
+            {seqUploadRow?.seqId ?? ''}
+          </Typography>
+        ) : (
+          <FormControl
+            size="small"
+            sx={tableFormControlStyle}
             variant="standard"
-            slotProps={{ input: { disableUnderline: requestCompleted() } }}
-            value={seqUploadRow?.seqId ?? ''}
-            onChange={(e) => handleSeqId(e.target.value)}
-            disabled={requestCompleted()}
-          />
-        </FormControl>
+            disabled={isCsvMode}
+          >
+            <TextField
+              id={`seqid-select-${seqUploadRow.id}`}
+              name="seqid"
+              variant="standard"
+              slotProps={{ input: { disableUnderline: requestCompleted() } }}
+              value={seqUploadRow?.seqId ?? ''}
+              onChange={(e) => handleSeqId(e.target.value)}
+              disabled={requestCompleted()}
+              error={isDuplicateSeqId}
+            />
+          </FormControl>
+        )}
       </TableCell>
       <TableCell sx={tableCellStyle}>
-        <Typography>{seqUploadRow?.file?.file.name ?? ''}</Typography>
+        <Typography sx={{ paddingTop: '10px', paddingBottom: '10px', marginRight: '40px' }}>
+          {seqUploadRow?.file?.file.name ?? ''}
+        </Typography>
       </TableCell>
       <TableCell sx={tableCellStyle}>
         {/* Would JoyUI LinearProgress be an option here? */}
