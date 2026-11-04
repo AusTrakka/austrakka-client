@@ -34,10 +34,10 @@ export default function UploadSequencesHelp() {
         File types
       </Typography>
       <Typography variant="body1" color="textPrimary" paddingBottom={1}>
-        <strong>FASTQ and FASTA assembly files.</strong> {import.meta.env.VITE_BRANDING_NAME} will
-        try to read the <InlineCode>Seq_ID</InlineCode> from each filename, using everything before
-        the first underscore (_). It will also try to pair files into read pairs (R1 and R2)
-        automatically. You can review and edit these assignments before submitting.
+        <strong>FASTQ files and FASTA assembly files.</strong> {import.meta.env.VITE_BRANDING_NAME}{' '}
+        will try to parse the filename for the Seq_ID and, for paired-end files, the read number.
+        You can review and edit these Seq_ID assignments before submitting. If you provide a CSV
+        file specifying expected filenames for each Seq_ID, this will override any filename parsing.
       </Typography>
       <Typography variant="body1" color="textPrimary" paddingBottom={2}>
         <strong>Consensus FASTA files.</strong> You can include multiple samples in a single file.
@@ -65,10 +65,57 @@ export default function UploadSequencesHelp() {
           affected.
         </li>
       </ul>
-      <Typography variant="body1" color="textPrimary">
+      <Typography variant="body1" color="textPrimary" paddingBottom={2}>
         If an upload partially fails, you can resubmit the same files with{' '}
         <InlineCode>Skip</InlineCode> selected. Successfully uploaded samples will be ignored and
         only the remaining files will be processed.
+      </Typography>
+
+      <Typography variant="h4" color="textPrimary" paddingBottom={2}>
+        CSV File Listing
+      </Typography>
+      <Typography variant="body1" color="textPrimary" paddingBottom={1}>
+        The file listing CSV allows you to pre-define which sample names should be used for your
+        samples, instead of relying on automatic naming or manual entry.
+      </Typography>
+      <Typography variant="body1" color="textPrimary" paddingBottom={2}>
+        Each CSV file requires the first row to act as a set of headers, with subsequent rows acting
+        as new sample records. Please use the correct format for the sequence type you are
+        uploading.
+      </Typography>
+      <Typography variant="body1" color="textPrimary" paddingBottom={1}>
+        <strong>Illumina Paired-End FASTQ</strong>
+        <ul>
+          <li>
+            <InlineCode>Seq_ID</InlineCode> The name you want to give the sample
+          </li>
+          <li>
+            <InlineCode>filepath1</InlineCode> The first file of the sample pairing.
+          </li>
+          <li>
+            <InlineCode>filepath2</InlineCode> The second file of the sample pairing.
+          </li>
+        </ul>
+      </Typography>
+      <Typography variant="body1" color="textPrimary" paddingBottom={1}>
+        <strong>Single File Formats</strong>
+        <ul>
+          <li>
+            <InlineCode>Seq_ID</InlineCode> The name you want to give the sample
+          </li>
+          <li>
+            <InlineCode>filepath</InlineCode> The sample file.
+          </li>
+        </ul>
+      </Typography>
+      <Typography variant="body1" color="textPrimary" paddingBottom={1}>
+        Every format except <strong>Consensus FASTA</strong> is supported, as the sample name is
+        always extracted from the file content.
+      </Typography>
+      <Typography variant="body1" color="textPrimary" paddingBottom={1}>
+        You do not need to remove file type extensions or directories from{' '}
+        <InlineCode>filepath</InlineCode> column values. Anything other than the filename itself is
+        discarded.
       </Typography>
     </>
   );
