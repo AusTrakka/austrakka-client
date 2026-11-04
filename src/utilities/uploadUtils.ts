@@ -223,7 +223,9 @@ export const createPairedSeqUploadRowsFromCsv = (
 //  [-_.]R?[12] - mandatory read number, e.g. _R1, -R1, _1, .R1, etc
 //  (_\d{3})? - optional like e.g. _001. Note nothing else may follow the read number in this format
 // Most parts are optional so this matches MySample_R1.fastq.gz as well as MySample_S17_L001_R1_001.fastq.gz
-const fastq_ill_paired_regexes = [/^(.+?)(?:_S\d+)?(?:_L\d{1,3}(?:_\d+)?)?[-_.][rR]?([12])(?:_\d{3})?$/];
+const fastq_ill_paired_regexes = [
+  /^(.+?)(?:_S\d+)?(?:_L\d{1,3}(?:_\d+)?)?[-_.][rR]?([12])(?:_\d{3})?$/,
+];
 
 export const createPairedSeqUploadRows = (
   files: DropFileUpload[],
@@ -295,7 +297,7 @@ export const createSingleSeqUploadRows = (
     // For all single-end types, just take the filename (sans suffix) to be the Seq_ID
     // Note based on feedback we are not bothering to strip possible file parts for Illumina SE
     const nameWithoutSuffix = stripSuffix(fileUpload.file.name, suffixes);
-    const sampleName = splitOnUnderscores ? nameWithoutSuffix.split('_')[0]: nameWithoutSuffix;
+    const sampleName = splitOnUnderscores ? nameWithoutSuffix.split('_')[0] : nameWithoutSuffix;
 
     sampleFiles[sampleName] ??= [];
     sampleFiles[sampleName].push(fileUpload);
