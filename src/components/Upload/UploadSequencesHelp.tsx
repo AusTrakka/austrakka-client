@@ -34,10 +34,11 @@ export default function UploadSequencesHelp() {
         File types
       </Typography>
       <Typography variant="body1" color="textPrimary" paddingBottom={1}>
-        <strong>FASTQ and FASTA assembly files.</strong> {import.meta.env.VITE_BRANDING_NAME} will
-        try to read the <InlineCode>Seq_ID</InlineCode> from each filename, using everything before
-        the first underscore (_). It will also try to pair files into read pairs (R1 and R2)
-        automatically. You can review and edit these assignments before submitting.
+        <strong>FASTQ files and FASTA assembly files.</strong> {import.meta.env.VITE_BRANDING_NAME} will
+        try to parse the filename for the Seq_ID and, for paired-end files, the read number.
+        You can review and edit these Seq_ID assignments before submitting. 
+        If you provide a CSV file specifying expected filenames for each Seq_ID, this will
+        override any filename parsing.
       </Typography>
       <Typography variant="body1" color="textPrimary" paddingBottom={2}>
         <strong>Consensus FASTA files.</strong> You can include multiple samples in a single file.

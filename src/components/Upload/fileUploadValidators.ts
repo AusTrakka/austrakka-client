@@ -1,5 +1,3 @@
-import { getSampleNameFromFile } from '../../utilities/uploadUtils';
-
 // Interfaces
 export interface CustomUploadValidatorReturn {
   success: boolean;
@@ -56,24 +54,6 @@ export const validateNoDuplicateFilenames = {
   },
 } as CustomUploadValidator;
 
-export const validateAllHaveSampleNamesWithOneFileOnly = {
-  func: (_files: File[], _suffixes: string[]) => {
-    const sampleCounts = countElements(_files.map((f) => getSampleNameFromFile(f.name, _suffixes)));
-    const problemSampleNames = Object.entries(sampleCounts)
-      .filter(([_sample, count]) => count !== 1)
-      .map(([sample, _count]) => sample);
-    if (problemSampleNames.length > 0) {
-      return {
-        success: false,
-        message: `Found too many files for the following samples: ${problemSampleNames.join(', ')}`,
-      } as CustomUploadValidatorReturn;
-    }
-    return {
-      success: true,
-    } as CustomUploadValidatorReturn;
-  },
-} as CustomUploadValidator;
-
 export const validateFileSizeLimit = {
   func: (_files: File[], _suffixes: string[], _maxFileSize?: number) => {
     if (!_maxFileSize) {
@@ -86,12 +66,3 @@ export const validateFileSizeLimit = {
     } as CustomUploadValidatorReturn;
   },
 } as CustomUploadValidator;
-
-// Private Functions
-function countElements(array: any[]): Record<string, number> {
-  const count: Record<string, number> = {};
-  array.forEach((val) => {
-    count[val] = (count[val] || 0) + 1;
-  });
-  return count;
-}
