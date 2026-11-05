@@ -1,4 +1,4 @@
-import { Box, Typography } from '@mui/material';
+import { Box, Link, Typography } from '@mui/material';
 import type React from 'react';
 
 // can be used elsewhere or maybe I should put this in the Theme file.
@@ -26,8 +26,18 @@ export default function UploadSequencesHelp() {
   return (
     <>
       <Typography variant="body1" color="textPrimary" paddingBottom={2}>
+        Full documentation on sequence upload can be found{' '}
+        <Link
+          href="https://docs.trakka.org/docs/Web-Interface/Uploads/sequence-uploads"
+          target="_blank"
+        >
+          here
+        </Link>
+        .
+      </Typography>
+
+      <Typography variant="body1" color="textPrimary" paddingBottom={2}>
         Drag and drop your sequence files into the upload box, or click to select them.{' '}
-        {/** will need to see how to link to docs page depending on the env* */}
       </Typography>
 
       <Typography variant="h4" color="textPrimary" paddingBottom={2}>
