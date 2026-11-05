@@ -2,6 +2,13 @@ import type { VisChainEntry } from '../components/Common/Activity/activityViewMo
 import type { MergeAlgorithm } from '../constants/mergeAlgorithm';
 
 // These are view models; should correspond to server-side DTO.
+
+export interface Announcement {
+  users: string[],
+  subject: string,
+  body: string,
+}
+
 export interface Project {
   projectId: number;
   globalId: string;

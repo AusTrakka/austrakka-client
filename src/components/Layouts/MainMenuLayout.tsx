@@ -1,6 +1,6 @@
 import {
   AccountCircle,
-  AccountTree,
+  AccountTree, Announcement,
   Dashboard,
   DensityMedium,
   DensitySmall,
@@ -11,7 +11,7 @@ import {
   Inventory,
   KeyboardDoubleArrowLeft,
   KeyboardDoubleArrowRight,
-  People,
+  People, Speaker,
   Terminal,
   Upload,
   ViewColumn,
@@ -102,6 +102,7 @@ function MainMenuLayout() {
     members: 'Members',
     users: 'Users',
     platform: 'Platform',
+    announcements: 'Announcements',
     fields: 'Fields',
     datasets: 'Datasets',
     share: 'Share',
@@ -187,6 +188,12 @@ function MainMenuLayout() {
       title: 'Platform',
       link: '/platform',
       icon: <Domain />,
+      permissionDomain: 'tenantPlatform',
+    },
+    {
+      title: 'Announcements',
+      link: '/Announcements',
+      icon: <Announcement />,
       permissionDomain: 'tenantPlatform',
     },
     {

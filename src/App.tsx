@@ -38,6 +38,7 @@ import UserDetailOverview from './components/Users/MainViews/UserDetailOverview'
 import UserProvider from './providers/UserProvider';
 import { msalInstance } from './utilities/authUtils';
 import CustomNavigationClient from './utilities/NavigationClient';
+import Announcements from './components/Announcements/Announcements';
 
 function App() {
   const navigate = useNavigate();
@@ -92,6 +93,7 @@ function App() {
                       <Route path="records/:seqId" element={<OrgSampleDetail />} />
                       <Route path="proformas/:proformaAbbrev" element={<ProFormaDetail />} />
                       <Route path="fields" element={<Fields />} />
+                      <Route path="announcements" element={<Announcements />} />
                       <Route path="users/:username" element={<UserDetailOverview />} />
                     </Route>
                     <Route path="*" element={<Navigate to="/" />} />
