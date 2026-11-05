@@ -5,6 +5,7 @@ export type VisChainEntry = {
 };
 
 export interface ActivityDetailInfo {
+  Status: string;
   Event: string;
   GlobalId?: string;
   'Time stamp': string;
