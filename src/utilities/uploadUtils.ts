@@ -39,13 +39,6 @@ function stripSuffix(filename: string, suffixes: string[]) {
   return filename; // no recognized suffix found
 }
 
-// strip off any suffix first, then split
-export const getSampleNameFromFile = (filename: string, suffixes: string[]) =>
-  stripSuffix(filename, suffixes).split(/[_|\s]+/)[0];
-
-// Special handling for artificially created "filenames" for fasta-cns
-export const getSampleNameFromFastaCns = (filename: string) => filename.split(/.fa$/)[0];
-
 export const getUploadableSampleOrgs = (user: UserSliceState): OrgDescriptor[] => {
   return privsOfTypeWithScope(user, RecordTypes.ORGANISATION, ScopeDefinitions.CreateSamples).map(
     (x) => {
@@ -217,67 +210,115 @@ export const createPairedSeqUploadRowsFromCsv = (
   return { rows, missing: errors };
 };
 
+// A list of regexes (one or more) matching possible filename formats once suffix stripped off.
+// For most seqtypes we just strip the suffixes and take the remaining filename to be the Seq_ID, but for some we have
+// regex-based logic.
+
+// For paired-end, we MUST match a regex in order to capture a read number, however simple names like
+// sampleName_1 will match.
+// SeqType.FastqIllPe Illumina standard formats capture:
+//  (.*?) - the Seq_ID
+//  (_S\d+)? - optional like e.g. _S23 (sample number); (?:) means non-capturing group,we only capture sample name/read
+//  (_L\d{1,3}(_\d+)?)? - optional like e.g. _L001 or L01_16 (lane number and optionally MGI barcode number)
+//  [-_.]R?[12] - mandatory read number, e.g. _R1, -R1, _1, .R1, etc
+//  (_\d{3})? - optional like e.g. _001. Note nothing else may follow the read number in this format
+// Most parts are optional so this matches MySample_R1.fastq.gz as well as MySample_S17_L001_R1_001.fastq.gz
+const fastq_ill_paired_regexes = [
+  /^(.+?)(?:_S\d+)?(?:_L\d{1,3}(?:_\d+)?)?[-_.][rR]?([12])(?:_\d{3})?$/,
+];
+
 export const createPairedSeqUploadRows = (
   files: DropFileUpload[],
   suffixes: string[],
-  pairs?: SeqUploadCsvPair[],
+  splitOnUnderscores: boolean = false,
 ): SeqPairedUploadRow[] => {
-  // If we already have a CSV
-  if (pairs && pairs.length > 0) {
+  var pairedFiles: Record<string, Record<string, DropFileUpload[]>> = {};
+  for (const fileUpload of files) {
+    // apply each regex in fastq_ill_paired_regexes till one matches
+    // even in 'split on underscores' mode, paired-end data must match regex as we want reliable read pair
+    const nameWithoutSuffix = stripSuffix(fileUpload.file.name, suffixes);
+
+    let matched = false;
+    for (const regex of fastq_ill_paired_regexes) {
+      const match = nameWithoutSuffix.match(regex);
+      if (match) {
+        const [, matchedSampleName, readNum] = match;
+        const sampleName = splitOnUnderscores ? matchedSampleName.split('_')[0] : matchedSampleName;
+        pairedFiles[sampleName] ??= {};
+        pairedFiles[sampleName][readNum] ??= [];
+        pairedFiles[sampleName][readNum].push(fileUpload);
+        matched = true;
+        break;
+      }
+    }
+    if (!matched) {
+      throw new Error(
+        `Unable to parse Seq_ID and read number from filename: ${fileUpload.file.name}`,
+      );
+    }
   }
 
-  const pairedFiles = files
-    .sort((a, b) => {
-      if (a.file.name < b.file.name) {
-        return -1;
-      }
-      return 1;
-    })
-    .reduce(
-      (
-        result: SeqPairedUploadRow[],
-        value: DropFileUpload,
-        index: number,
-        array: DropFileUpload[],
-      ) => {
-        if (index % 2 === 0) {
-          result.push({
-            id: crypto.randomUUID(),
-            seqId: getSampleNameFromFile(value.file.name, suffixes),
-            read1: value,
-            read2: array[index + 1],
-            seqType: SeqType.FastqIllPe,
-            state: SeqUploadRowState.Waiting,
-          } as SeqPairedUploadRow);
-        }
-        return result;
-      },
-      [],
-    );
-  return pairedFiles;
+  var rows: SeqPairedUploadRow[] = [];
+  for (const [sampleName, sampleFiles] of Object.entries(pairedFiles)) {
+    const numFiles = Object.keys(sampleFiles).length;
+    if (numFiles !== 2)
+      throw new Error(`Expected exactly 2 files for sample ${sampleName}, found ${numFiles}`);
+    // Read values should be exactly '1' and '2'
+    if (!sampleFiles['1'] || !sampleFiles['2'])
+      throw new Error(
+        `Expected reads 1 and 2 for sample ${sampleName}, parsed ${Object.keys(sampleFiles).join(' and ')}`,
+      );
+    if (sampleFiles['1'].length > 1)
+      throw new Error(`Multiple files match the same read (1) for sample ${sampleName}`);
+    if (sampleFiles['2'].length > 1)
+      throw new Error(`Multiple files match the same read (2) for sample ${sampleName}`);
+
+    rows.push({
+      id: crypto.randomUUID(),
+      seqId: sampleName,
+      read1: sampleFiles['1'][0],
+      read2: sampleFiles['2'][0],
+      seqType: SeqType.FastqIllPe,
+      state: SeqUploadRowState.Waiting,
+    } as SeqPairedUploadRow);
+  }
+
+  return rows;
 };
 
 export const createSingleSeqUploadRows = (
   files: DropFileUpload[],
   seqType: SeqType,
   suffixes: string[],
+  splitOnUnderscores: boolean = false,
 ): SeqSingleUploadRow[] => {
-  const singleFiles = files.map((file) => {
-    // For fasta-cns, we've returned the contig name as the whole filename minus .fa suffix.
-    // Preserve it. For other data types, we must parse
-    const seqId =
-      seqType === SeqType.FastaCns
-        ? getSampleNameFromFastaCns(file.file.name)
-        : getSampleNameFromFile(file.file.name, suffixes);
-    return {
+  var sampleFiles: Record<string, DropFileUpload[]> = {};
+  for (const fileUpload of files) {
+    // For all single-end types, just take the filename (sans suffix) to be the Seq_ID
+    // Note based on feedback we are not bothering to strip possible file parts for Illumina SE
+    const nameWithoutSuffix = stripSuffix(fileUpload.file.name, suffixes);
+    const sampleName = splitOnUnderscores ? nameWithoutSuffix.split('_')[0] : nameWithoutSuffix;
+
+    sampleFiles[sampleName] ??= [];
+    sampleFiles[sampleName].push(fileUpload);
+  }
+
+  var rows: SeqSingleUploadRow[] = [];
+  for (const [sampleName, fileArray] of Object.entries(sampleFiles)) {
+    if (fileArray.length > 1)
+      throw new Error(
+        `Expected exactly 1 file for sample ${sampleName}, found ${fileArray.length}`,
+      );
+    rows.push({
       id: crypto.randomUUID(),
-      seqId,
-      file,
+      seqId: sampleName,
+      file: fileArray[0],
       seqType,
       state: SeqUploadRowState.Waiting,
-    } as SeqSingleUploadRow;
-  });
-  return singleFiles;
+    } as SeqSingleUploadRow);
+  }
+
+  return rows;
 };
 
 // Split file into lines by contig, by just searching for ">" at the start of a line
