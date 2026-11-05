@@ -22,9 +22,9 @@ import { getWidgetExportName } from '../../../../utilities/fileUtils';
 import { updateTabUrlWithSearch } from '../../../../utilities/navigationUtils';
 import ChartInfoTooltip from './InfoToolTip';
 
-const STABLE_CAT_FIELD = 'Owner_group';
+const STABLE_CAT_FIELD = 'Organisation';
 const STABLE_CAT_FIELD_LABEL = 'Organisation';
-const SHARED_GROUPS_FIELD = 'Shared_groups';
+const SHARED_GROUPS_FIELD = 'Projects';
 const UNSHARED_VALUE = 'Not shared'; // label for samples with no value for the category field
 
 const HAS_SEQ = 'Has_sequences';
@@ -41,19 +41,11 @@ interface HasSeqWidgetProps extends GenericMetadataWidgetProps {
   categoryField?: string;
 }
 
-function stripOwnerSuffix(value: string): string {
-  return value.split('-Owner')[0];
-}
-
-function isGroupName(name: string): boolean {
-  return name.endsWith('-Group');
-}
-
 function getSharedProjectNames(raw: string | undefined): string[] {
   if (!raw) return [];
-  const groups: string[] = JSON.parse(raw).filter(isGroupName);
+  const groups: string[] = JSON.parse(raw);
   if (groups.length === 0) return []; // no groups at all = not shared
-  return groups.map((g) => g.slice(0, -'-Group'.length));
+  return groups;
 }
 
 function HasSeq({
@@ -127,7 +119,7 @@ function HasSeq({
     } else {
       for (const sample of filteredData) {
         const raw = (sample[categoryFieldStable as keyof Sample] as string) ?? '';
-        const label = categoryFieldStable === 'Owner_group' ? stripOwnerSuffix(raw) : raw;
+        const label = raw;
         const isAvailable = sample[HAS_SEQ as keyof Sample] === 'True';
         if (isAvailable) {
           availableMap.set(label, (availableMap.get(label) ?? 0) + 1);
@@ -158,8 +150,7 @@ function HasSeq({
     (params: ECElementEvent) => {
       if (!params.seriesName || !params.name) return;
       const isAvailable = params.seriesName === 'Available';
-      const rawCategory =
-        categoryFieldStable === 'Owner_group' ? `${params.name}-Owner` : params.name;
+      const rawCategory = params.name;
 
       let categoryFilter: DataTableFilterMeta;
 
@@ -176,7 +167,7 @@ function HasSeq({
           categoryFilter = {
             [SHARED_GROUPS_FIELD]: {
               operator: FilterOperator.AND,
-              constraints: [{ matchMode: FilterMatchMode.CONTAINS, value: `${params.name}-Group` }],
+              constraints: [{ matchMode: FilterMatchMode.CONTAINS, value: params.name }],
             },
           };
         }

@@ -260,8 +260,5 @@ export const selectGoodTimeBinUnitEchart = (dates: any[]): { unit: string; step:
 // The transform required for the Owner_group field, when required. Strips -Owner from the group.
 export const ownerGroupVegaTransform = (field: string | undefined) => {
   if (!field) return [];
-  if (field === 'Owner_group') {
-    return [{ calculate: `split(datum['${field}'],'-Owner')[0]`, as: field }];
-  }
   return [];
 };

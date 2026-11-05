@@ -45,9 +45,9 @@ function ActivityContentBox({ entry, logContext }: ContentBoxProps): JSX.Element
                     <TableCell sx={{ p: '8px 8px 8px 100px', verticalAlign: 'top' }}>
                       <Box>
                         {logContext.map((contextEntry) => (
-                          <Typography key={contextEntry.UniqueStringId} variant="body2">
-                            {contextEntry.ResourceType}
-                            <Chip label={contextEntry.UniqueStringId} sx={{ ml: 1 }} />
+                          <Typography key={contextEntry.uniqueStringId} variant="body2">
+                            {contextEntry.resourceType}
+                            <Chip label={contextEntry.uniqueStringId} sx={{ ml: 1 }} />
                           </Typography>
                         ))}
                       </Box>

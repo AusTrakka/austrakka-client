@@ -26,7 +26,7 @@ const FIELDS_AND_COLOURS: string[][] = [
   ['Jurisdiction', 'jurisdiction'],
   ['State', 'jurisdiction'],
   ['Country', 'tableau10'],
-  ['Owner_group', 'tableau10'],
+  ['Organisation', 'tableau10'],
 ];
 const DEFAULT_COLOUR_SCHEME = 'tableau10';
 
