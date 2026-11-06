@@ -296,16 +296,6 @@ export interface ProjectField {
   createdBy: string;
 }
 
-export interface ProjectView {
-  id: number;
-  fileName: string;
-  blobFilePath: string;
-  originalFileName: string;
-  isBase: boolean;
-  fields: string[];
-  viewFields: string[]; // this is currently calculated client-side
-}
-
 export interface Proforma {
   proformaId: number;
   proFormaVersionId: number;
@@ -382,11 +372,10 @@ export interface Organisation {
 export interface DataSetEntry {
   entryId: number;
   dataSetId: number;
-  fileName: string;
-  analysisLabel: string;
   createdBy: string;
   uploadedDate: Date;
   fields: string[];
+  viewFields: string[]; // this is currently calculated client-side
 }
 
 export interface Role {
