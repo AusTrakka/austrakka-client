@@ -572,9 +572,7 @@ function TreeDetail() {
             }}
           >
             <Typography className="pageTitle">
-              {tree
-                ? `${tree.treeName} - ${isoDateLocalDate(tree.versionName.replaceAll('-', '/'))}`
-                : ''}
+              {tree ? tree.treeName : ''}
               {tree && rootId !== '0' ? ` - Subtree ${rootId}` : ''}
             </Typography>
 
