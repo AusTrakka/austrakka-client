@@ -10,6 +10,7 @@ import PlotList from './PlotList';
 import ProjectSamplesTable from './ProjectSamplesTable';
 import { PROJ_TABS, PROJ_TABS_LIST } from './projTabConstants';
 import TreeList from './TreeList';
+import { selectIfTreesAvailable } from '../../app/treeSlice';
 
 function ProjectOverview() {
   const { tab } = useParams();
@@ -19,6 +20,8 @@ function ProjectOverview() {
   const isSamplesLoading: boolean = useAppSelector((state) =>
     selectAwaitingProjectMetadata(state, LOCAL_PROJECT.abbreviation),
   );
+  const isTreesAvailable: boolean = useAppSelector((state) => selectIfTreesAvailable(state));
+  const isDataAvailable: boolean = !isSamplesLoading || isTreesAvailable;
 
   const projectOverviewTabs: TabContentProps[] = useMemo(() => PROJ_TABS_LIST, []);
 
@@ -31,19 +34,27 @@ function ProjectOverview() {
     }
   }, [tab, projectOverviewTabs]);
 
-  return isSamplesLoading ? (
+  return !isDataAvailable ? (
     <Alert severity="error">Add data to visualise!</Alert>
   ) : (
     <>
       <CustomTabs value={tabValue!} tabContent={Object.values(PROJ_TABS)} setValue={setTabValue} />
       <TabPanel value={tabValue!} index={PROJ_TABS.samples.index}>
-        <ProjectSamplesTable projectAbbrev={LOCAL_PROJECT.abbreviation} />
+        {isSamplesLoading ? (
+          <Alert severity="error">No metadata CSV added yet</Alert>
+        ) : (
+          <ProjectSamplesTable projectAbbrev={LOCAL_PROJECT.abbreviation} />
+        )}
       </TabPanel>
       <TabPanel value={tabValue!} index={PROJ_TABS.trees.index}>
-        <TreeList />
+        {!isTreesAvailable ? <Alert severity="error">No trees added yet</Alert> : <TreeList />}
       </TabPanel>
       <TabPanel value={tabValue!} index={PROJ_TABS.plots.index}>
-        <PlotList />
+        {isSamplesLoading ? (
+          <Alert severity="error">No metadata CSV added yet</Alert>
+        ) : (
+          <PlotList />
+        )}
       </TabPanel>
     </>
   );

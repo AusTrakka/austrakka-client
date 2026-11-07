@@ -62,7 +62,10 @@ export default treeSlice.reducer;
 
 export const { addTree } = treeSlice.actions;
 
-export const selectTrees = (state: RootState) => state.treeState.trees;
+export const selectTrees = (state: RootState): TreeVersion[] => state.treeState.trees;
+
+export const selectIfTreesAvailable = (state: RootState): boolean =>
+  (state.treeState.trees?.length ?? 0) > 0;
 
 // return tree, or errorMsg if cannot return tree
 export const selectTreeById = (state: RootState, treeId: number): [TreeVersion | null, string] => {
