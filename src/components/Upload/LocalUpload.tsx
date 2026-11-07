@@ -1,5 +1,5 @@
 import { FileUpload } from '@mui/icons-material';
-import { Backdrop, Button, CircularProgress, Typography } from '@mui/material';
+import { Alert, Backdrop, Button, CircularProgress, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import Papa from 'papaparse';
 import { useEffect, useRef, useState } from 'react';
@@ -91,19 +91,34 @@ function LocalUpload() {
     function parseCSV(file: File) {
       Papa.parse(file, {
         header: true,
+        skipEmptyLines: true,
         complete: (result: any) => {
           // TODO need to handle papaparse errors and set parseError
+          // TODO probably also trim data values
 
           const csvData = result.data as Sample[];
           const fieldNames: string[] = result.meta.fields;
 
-          if (csvData.length === 0) {
-            setParseError('File appears to contain no records');
-            // TODO if we have succeeded, but result.errors is non-empty, show warnings
+          if (result.meta.fields.length === 0) {
+            setParseError('Unable to parse CSV header');
+            setParsedMetadata([]);
+            setParsedFields([]);
             return;
           }
 
+          if (csvData.length === 0) {
+            setParseError('File appears to contain no records');
+            setParsedMetadata([]);
+            // We do have fields in this case but haven't attempted to deduce types, and there
+            // is no point in listing fields if there's no data
+            setParsedFields([]);
+            return;
+          }
+
+          // TODO if we have succeeded, but result.errors is non-empty, show warnings
+
           const fields: DeducedField[] = buildFieldListAndUpdateData(csvData, fieldNames);
+          setParseError(null);
           setParsedMetadata(csvData);
           setParsedFields(fields);
         },
@@ -114,7 +129,10 @@ function LocalUpload() {
       files.length > 0 && Object.keys(METADATA_FORMATS).includes(getSuffix(files[0]));
     if (metadataFileAvailable) {
       parseCSV(files[0].file);
+    } else {
+      setParseError(null);
     }
+    // TODO may want to hide when there is parseError
     setShowFieldsTable(metadataFileAvailable);
   }, [files]);
 
@@ -184,12 +202,14 @@ function LocalUpload() {
           </Typography>
         </Grid>
       </Grid>
-      <Grid container spacing={6} alignItems="stretch" sx={{ paddingBottom: 6 }}>
-        <Grid size={{ md: 6, xs: 12 }}>
+      <Grid container spacing={1} alignItems="flex-start" sx={{ paddingBottom: 6 }}>
+        <Grid size={12}>
+          <Typography variant="h4" color="primary">
+            Select metadata or tree file
+          </Typography>
+        </Grid>
+        <Grid container size={{ md: 6, xs: 12 }}>
           <Grid size={12}>
-            <Typography variant="h4" color="primary">
-              Select metadata or tree file
-            </Typography>
             <FileDragDrop
               files={files}
               setFiles={setFiles}
@@ -197,17 +217,26 @@ function LocalUpload() {
               multiple={false}
             />
           </Grid>
-          <Grid container size={12} justifyContent="flex-end">
+          <Grid container size={12} justifyContent="flex-end" sx={{ paddingBottom: 2 }}>
             {submitButton()}
           </Grid>
         </Grid>
-        <Grid size={{ md: 6, xs: 12 }}>
+        <Grid container spacing={1} size={{ md: 6, xs: 12 }}>
+          {parseError && (
+            <Grid size={12}>
+              <Alert severity="error">
+                <Typography>{parseError}</Typography>
+              </Alert>
+            </Grid>
+          )}
           {showFieldsTable && (
-            <FieldUploadCheck
-              fields={parsedFields}
-              setFields={setParsedFields}
-              csvData={parsedMetadata}
-            />
+            <Grid size={12}>
+              <FieldUploadCheck
+                fields={parsedFields}
+                setFields={setParsedFields}
+                csvData={parsedMetadata}
+              />
+            </Grid>
           )}
         </Grid>
       </Grid>
