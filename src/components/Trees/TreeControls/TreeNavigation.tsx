@@ -41,8 +41,6 @@ export default function TreeNavigation({
   onJumpToSubtree,
   phylocanvasRef,
 }: TreeNavigationProps) {
-  const navigate = useNavigate();
-  const { projectAbbrev, treeId } = useParams();
   const [nodes, setNodes] = React.useState<{ [key: string]: PhylocanvasNode } | null>(null);
   const [history, setHistory] = React.useState<Array<PhylocanvasNode>>([]);
   // the root is implicitly the -1th element of the history
@@ -126,45 +124,9 @@ export default function TreeNavigation({
       phylocanvasRef.current?.fitInCanvas();
     }
   };
-  const resetHistory = () => {
-    setHistory([]);
-    setHistoryIndex(-1);
-  };
-  const versionClickHandler = (version: TreeVersion) => {
-    if (version.version === currentVersion) return;
-    handleGoToRoot();
-    navigate(`/projects/${projectAbbrev}/trees/${treeId}/versions/${version.treeVersionId}`);
-    setNodes(null);
-    resetHistory();
-  };
+
   return (
     <Grid>
-      <FormControl sx={{ marginY: 1 }} size="small" fullWidth>
-        <InputLabel id="tree-version-label">Version</InputLabel>
-        <Select
-          fullWidth
-          labelId="tree-version-label"
-          id="tree-version"
-          value={[currentVersion]}
-          name="version"
-          label="Version"
-          onChange={onChange}
-        >
-          {versions
-            .filter((version) => version.version !== null)
-            .map((version) => (
-              <MenuItem
-                key={version.treeVersionId}
-                value={version.version}
-                onClick={() => {
-                  versionClickHandler(version);
-                }}
-              >
-                {isoDateLocalDate(version.versionName.replaceAll('-', '/'))}
-              </MenuItem>
-            ))}
-        </Select>
-      </FormControl>
       <FormControl sx={{ marginY: 1 }} size="small" fullWidth>
         <InputLabel id="tree-type-label">Type</InputLabel>
         <Select

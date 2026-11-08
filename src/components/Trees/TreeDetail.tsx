@@ -413,12 +413,14 @@ function TreeDetail() {
                   visualColumns={visualisableColumns}
                   state={state}
                   onChange={handleStateChange}
+                  metadataAvailable={tableMetadata.length > 0}
                 />
               </AccordionDetails>
             </Accordion>
             <Accordion
               expanded={expanded === 'metadataBlocks'}
               onChange={handleAccordionChange('metadataBlocks')}
+              hidden={tableMetadata.length === 0}
             >
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Typography>Metadata blocks</Typography>
@@ -545,6 +547,12 @@ function TreeDetail() {
     return <></>;
   };
 
+  const renderTableIconTooltip = () => {
+    // This is the tooltip for when the icon is disabled
+    if (tableMetadata.length === 0) return 'No CSV samples provided match tree nodes';
+    return tableOpen ? 'Hide metadata table' : 'Show metadata table';
+  };
+
   return (
     <Box>
       {renderWarning()}
@@ -586,13 +594,17 @@ function TreeDetail() {
                 </IconButton>
               </Tooltip>
 
-              <Tooltip title={tableOpen ? 'Hide metadata table' : 'Show metadata table'} arrow>
-                <IconButton
-                  onClick={() => setTableOpen(!tableOpen)}
-                  color={tableOpen ? 'primary' : 'default'}
-                >
-                  <TableChart />
-                </IconButton>
+              <Tooltip title={renderTableIconTooltip()} arrow>
+                {/* span can still receive pointer events for tooltip even when icon disabled */}
+                <span>
+                  <IconButton
+                    onClick={() => setTableOpen(!tableOpen)}
+                    color={tableOpen ? 'primary' : 'default'}
+                    disabled={tableMetadata.length === 0}
+                  >
+                    <TableChart />
+                  </IconButton>
+                </span>
               </Tooltip>
 
               {tree && (

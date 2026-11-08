@@ -1,4 +1,5 @@
 import {
+  Box,
   FormControl,
   FormControlLabel,
   FormGroup,
@@ -37,63 +38,69 @@ export default function NodeAndLabelControls({
   visualColumns,
   state,
   onChange,
+  metadataAvailable,
 }: {
   columns: string[];
   visualColumns: string[];
   state: State;
   onChange: (event: React.ChangeEvent<HTMLInputElement> | SelectChangeEvent<string[]>) => void;
+  metadataAvailable: boolean;
 }) {
   const { compact } = useCompactMode();
   const theme = useTheme();
   return (
     <Grid>
-      <FormControl sx={{ marginY: 1 }} fullWidth size="small">
-        <InputLabel id="column-label">Label columns</InputLabel>
-        <Select
-          labelId="column-label"
-          id="column"
-          multiple
-          name="labelBlocks"
-          value={state.labelBlocks}
-          onChange={onChange}
-          input={<OutlinedInput label="Label columns" />}
-          MenuProps={MenuProps}
-        >
-          {columns.map((column) => (
-            <MenuItem
-              key={column}
-              value={column}
-              style={getStyles(column, state.labelBlocks, theme)}
-            >
-              {column}
+      {/* hidden when metadataAvailable is false */}
+      <Box sx={{ display: metadataAvailable ? 'contents' : 'none' }}>
+        <FormControl sx={{ marginY: 1 }} fullWidth size="small">
+          <InputLabel id="column-label">Label columns</InputLabel>
+          <Select
+            labelId="column-label"
+            id="column"
+            multiple
+            name="labelBlocks"
+            value={state.labelBlocks}
+            onChange={onChange}
+            input={<OutlinedInput label="Label columns" />}
+            MenuProps={MenuProps}
+          >
+            {columns.map((column) => (
+              <MenuItem
+                key={column}
+                value={column}
+                style={getStyles(column, state.labelBlocks, theme)}
+              >
+                {column}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl sx={{ marginY: 1 }} fullWidth size="small">
+          <InputLabel id="column-label">Node Colouring</InputLabel>
+          <Select
+            labelId="column-label"
+            id="column"
+            multiple={false}
+            name="nodeColumn"
+            value={[state.nodeColumn]}
+            onChange={onChange}
+            input={<OutlinedInput label="Column Colour" />}
+            MenuProps={MenuProps}
+          >
+            <MenuItem value="">
+              <i>None</i>
             </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-      <FormControl sx={{ marginY: 1 }} fullWidth size="small">
-        <InputLabel id="column-label">Node Colouring</InputLabel>
-        <Select
-          labelId="column-label"
-          id="column"
-          multiple={false}
-          name="nodeColumn"
-          value={[state.nodeColumn]}
-          onChange={onChange}
-          input={<OutlinedInput label="Column Colour" />}
-          MenuProps={MenuProps}
-        >
-          <MenuItem value="">
-            <i>None</i>
-          </MenuItem>
-          {visualColumns.map((column) => (
-            <MenuItem key={column} value={column}>
-              {column}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+            {visualColumns.map((column) => (
+              <MenuItem key={column} value={column}>
+                {column}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
       <FormControl fullWidth>
         <FormGroup>
+          {/* TODO this should already be hiding it - why isn't it ? */}
           {state.labelBlocks.length > 0 ? (
             <FormControlLabel
               className="tree-control-switch"
