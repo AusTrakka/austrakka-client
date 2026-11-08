@@ -7,7 +7,7 @@ import {
   type DataTableFilterMetaData,
   type DataTableRowClickEvent,
 } from 'primereact/datatable';
-import type React from 'react';
+import React, { useEffect } from 'react';
 import { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../app/store';
@@ -16,16 +16,21 @@ import type { TreeVersion } from '../../types/dtos';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
 
-// TODO if there's only one tree in the list, select it immediately
-
 function TreeList() {
   // NB this is a list of TreeVersions. In the standalone client, we assume one "version" per tree
-  const columns = [{ field: 'treeName', header: 'Name' }];
+  const columns = [{ field: 'treeName', header: 'Tree name' }];
   const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   });
   const navigate = useNavigate();
   const treeList: TreeVersion[] = useAppSelector((state) => selectTrees(state));
+
+  // If there's only one tree in the list, select it immediately
+  useEffect(() => {
+    if (treeList.length === 1) {
+      navigate(`/data/trees/${treeList[0].treeId}`);
+    }
+  }, [treeList, navigate]);
 
   const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
