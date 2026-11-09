@@ -13,16 +13,17 @@ import type { RootState } from './store';
 
 export interface TreeState {
   trees: TreeVersion[];
-  next_tree_index: number;
+  nextTreeIndex: number;
 }
 
 const initialState: TreeState = {
   trees: [],
-  next_tree_index: 1,
+  // This index value only ever increases, never decreases, and can uniquely name a tree if a name is not provided
+  nextTreeIndex: 1,
 };
 
 interface UploadedTree {
-  //treeName: string;
+  name: string | null;
   newickTree: string;
 }
 
@@ -31,19 +32,18 @@ const treeSlice = createSlice({
   initialState,
   reducers: {
     addTree: (state, action: PayloadAction<UploadedTree>) => {
-      const nextTreeId =
-        state.trees.length > 0 ? Math.max(...state.trees.map((tree) => tree.treeVersionId)) + 1 : 1;
+      const { name, newickTree } = action.payload;
       const now: string = new Date().toISOString();
       const newTreeVersion = {
-        treeId: nextTreeId,
-        treeVersionId: nextTreeId,
-        treeName: `Tree ${state.next_tree_index}`,
+        treeId: state.nextTreeIndex,
+        treeVersionId: state.nextTreeIndex,
+        treeName: name ?? `Tree ${state.nextTreeIndex}`,
         projectId: LOCAL_PROJECT.projectId,
         projectMembersGroupId: LOCAL_PROJECT.projectMembers.id,
         projectName: LOCAL_PROJECT.name,
         completedTime: now,
         wasScheduled: false,
-        newickTree: action.payload.newickTree,
+        newickTree: newickTree,
         isActive: true,
         versionName: now, // TODO fix - invalid date
         version: now,
@@ -52,7 +52,7 @@ const treeSlice = createSlice({
         createdBy: 'Local User', // TODO matches temporary hard-coding in userSlice
         lastUpdatedBy: 'Local User',
       };
-      state.next_tree_index += 1;
+      state.nextTreeIndex += 1;
       state.trees.push(newTreeVersion);
     },
   },
@@ -66,6 +66,8 @@ export const selectTrees = (state: RootState): TreeVersion[] => state.treeState.
 
 export const selectIfTreesAvailable = (state: RootState): boolean =>
   (state.treeState.trees?.length ?? 0) > 0;
+
+export const selectNextTreeIndex = (state: RootState): number => state.treeState.nextTreeIndex;
 
 // return tree, or errorMsg if cannot return tree
 export const selectTreeById = (state: RootState, treeId: number): [TreeVersion | null, string] => {

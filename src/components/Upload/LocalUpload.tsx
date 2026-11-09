@@ -1,13 +1,21 @@
 import { FileUpload } from '@mui/icons-material';
-import { Alert, Backdrop, Button, CircularProgress, Typography } from '@mui/material';
+import {
+  Alert,
+  Backdrop,
+  Button,
+  CircularProgress,
+  OutlinedInput,
+  Typography,
+} from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import Papa from 'papaparse';
 import { useEffect, useRef, useState } from 'react';
-import { addMetadata } from '../../app/projectMetadataSlice';
-import { useAppDispatch } from '../../app/store';
-import { addTree } from '../../app/treeSlice';
+import { addMetadata, selectMetadataFilename } from '../../app/projectMetadataSlice';
+import { useAppDispatch, useAppSelector } from '../../app/store';
+import { addTree, selectNextTreeIndex } from '../../app/treeSlice';
 import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';
+import { LOCAL_PROJECT } from '../../constants/standaloneClientConstants';
 import type { ResponseMessage } from '../../types/apiResponse.interface';
 import type { DropFileUpload } from '../../types/DropFileUpload';
 import type { DeducedField } from '../../types/dtos';
@@ -43,11 +51,20 @@ function LocalUpload() {
   const [parsedMetadata, setParsedMetadata] = useState<Sample[]>([]);
   const [parsedFields, setParsedFields] = useState<DeducedField[]>([]);
   const [parseError, setParseError] = useState<string | null>(null);
+  const [newTreeName, setNewTreeName] = useState<string | null>(null);
   const scrollRef = useRef<null | HTMLDivElement>(null);
 
+  const nextTreeIndex = useAppSelector((state) => selectNextTreeIndex(state));
+
+  // TODO is there a better syntax for contains?
+  const metadataFilePending =
+    files.length > 0 && METADATA_FORMATS[getSuffix(files[0])] !== undefined;
+  const treeFilePending = files.length > 0 && TREE_FORMATS[getSuffix(files[0])] !== undefined;
+
   const submitButton = () => {
-    if (files.length > 0 && METADATA_FORMATS[getSuffix(files[0])]) {
+    if (metadataFilePending) {
       // Metadata file
+      // TODO this ought to depend on parsed metadata ready, not input file. Technically a race condition
       const metadataReady = files.length > 0 && parseError == null;
       return (
         <Button
@@ -60,7 +77,7 @@ function LocalUpload() {
         </Button>
       );
     }
-    if (files.length > 0 && TREE_FORMATS[getSuffix(files[0])]) {
+    if (treeFilePending) {
       return (
         <Button
           variant="contained"
@@ -87,6 +104,7 @@ function LocalUpload() {
 
   // When metadata file added, show and update fields table
   // When metadata file removed, hide fields table
+  // When tree file added, set the default tree name ( TODO and parse the tree for correctness )
   useEffect(() => {
     function parseCSV(file: File) {
       Papa.parse(file, {
@@ -124,21 +142,30 @@ function LocalUpload() {
         },
       });
     }
-
-    const metadataFileAvailable: boolean =
-      files.length > 0 && Object.keys(METADATA_FORMATS).includes(getSuffix(files[0]));
-    if (metadataFileAvailable) {
+    if (metadataFilePending) {
       parseCSV(files[0].file);
     } else {
       setParseError(null);
     }
     // TODO may want to hide when there is parseError
-    setShowFieldsTable(metadataFileAvailable);
-  }, [files]);
+    //   and if not, don't need this variable at all, just base fields table on metadataFilePending
+    setShowFieldsTable(metadataFilePending);
+
+    // Reset tree name only when tree file added; user may then edit it
+    if (treeFilePending) {
+      setNewTreeName(`Tree ${nextTreeIndex}`);
+    }
+  }, [files, metadataFilePending, treeFilePending, nextTreeIndex]);
 
   const handleMetadataAdded = async () => {
     // Needs to validate, and insert data into project redux state
-    dispatch(addMetadata({ uploadedData: parsedMetadata, uploadedFields: parsedFields }));
+    dispatch(
+      addMetadata({
+        uploadedData: parsedMetadata,
+        uploadedFields: parsedFields,
+        filename: files[0].file.name,
+      }),
+    );
 
     // TODO is there a failure case here? handle ingestion errors resulting from e.g. wrong field types
     setSubmission((oldSubmissionState) => ({
@@ -161,7 +188,7 @@ function LocalUpload() {
       const newickString = event.target?.result as string;
       dispatch(
         addTree({
-          // TODO optionally ask user for tree name and pass it here
+          name: newTreeName,
           newickTree: newickString,
         }),
       );
@@ -236,6 +263,23 @@ function LocalUpload() {
                 setFields={setParsedFields}
                 csvData={parsedMetadata}
               />
+            </Grid>
+          )}
+          {treeFilePending && (
+            <Grid size={12} container alignItems="center" spacing={1}>
+              <Grid>
+                <Typography>Tree name:</Typography>
+              </Grid>
+              <Grid>
+                <OutlinedInput
+                  value={newTreeName}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setNewTreeName(e.target.value)
+                  }
+                  size="small"
+                  sx={{ width: 250 }}
+                />
+              </Grid>
             </Grid>
           )}
         </Grid>

@@ -178,7 +178,6 @@ const FileDragDrop = forwardRef<any, FileDragDropProps>(
             p: 3,
             borderRadius: 2,
             backgroundColor: dragActive ? '' : Theme.PrimaryMainBackground,
-            marginBottom: 2,
             height: '250px',
             border: dragActive ? 4 : 0,
             borderColor: Theme.PrimaryMainBackground,
