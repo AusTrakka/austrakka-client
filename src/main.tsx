@@ -6,12 +6,14 @@ import { closeSnackbar, SnackbarProvider } from 'notistack';
 import { Provider } from 'react-redux';
 import App from './App';
 import store from './app/store';
+import TabeeReceiver from './app/TabeeReceiver';
 import { globalStyles } from './assets/themes/theme';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   // <React.StrictMode>
   <Provider store={store}>
     <BrowserRouter>
+      <TabeeReceiver />
       {/* StyledEngineProvider: Allows MUI's styles to be overridden */}
       <StyledEngineProvider injectFirst>
         <GlobalStyles styles={globalStyles} />
