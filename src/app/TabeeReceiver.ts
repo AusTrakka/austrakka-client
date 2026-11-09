@@ -53,11 +53,8 @@ function TabeeReceiver() {
             const treeName = `Tree ${idx + 1} from ${sourceApplication}`;
             store.dispatch(addTree({ name: treeName, newickTree: file.data }));
           }
-          const { trees } = store.getState().treeState;
-          const importedTree = trees[trees.length - 1];
-          if (importedTree !== undefined) {
-            navigateRef.current(`/data/trees/${importedTree.treeId}`);
-          }
+          // Show tree list; if there is only one tree it will redirect
+          navigateRef.current(`/data/trees`);
         },
       },
       importCapabilities: {
