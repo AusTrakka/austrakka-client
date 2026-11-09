@@ -10,12 +10,11 @@ import {
 import Grid from '@mui/material/Grid2';
 import Papa from 'papaparse';
 import { useEffect, useRef, useState } from 'react';
-import { addMetadata, selectMetadataFilename } from '../../app/projectMetadataSlice';
+import { addMetadata } from '../../app/projectMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { addTree, selectNextTreeIndex } from '../../app/treeSlice';
 import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';
-import { LOCAL_PROJECT } from '../../constants/standaloneClientConstants';
 import type { ResponseMessage } from '../../types/apiResponse.interface';
 import type { DropFileUpload } from '../../types/DropFileUpload';
 import type { DeducedField } from '../../types/dtos';
@@ -163,7 +162,6 @@ function LocalUpload() {
       addMetadata({
         uploadedData: parsedMetadata,
         uploadedFields: parsedFields,
-        filename: files[0].file.name,
       }),
     );
 
