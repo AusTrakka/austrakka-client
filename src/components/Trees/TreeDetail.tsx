@@ -36,7 +36,7 @@ import type {
 } from '../../types/phylocanvas.interface';
 import type { Sample } from '../../types/sample.interface';
 import type TreeState from '../../types/tree.interface';
-import { isoDateLocalDate, isoDateLocalDateNoTime } from '../../utilities/dateUtils';
+import { isoDateLocalDateNoTime } from '../../utilities/dateUtils';
 import {
   useStateFromSearchParamsForObject,
   useStateFromSearchParamsForPrimitive,

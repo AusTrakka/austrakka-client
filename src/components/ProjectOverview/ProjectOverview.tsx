@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { selectAwaitingProjectMetadata } from '../../app/projectMetadataSlice';
 import { useAppSelector } from '../../app/store';
+import { selectIfTreesAvailable } from '../../app/treeSlice';
 import { LOCAL_PROJECT } from '../../constants/standaloneClientConstants';
 import CustomTabs, { type TabContentProps } from '../Common/CustomTabs';
 import TabPanel from '../Common/TabPanel';
@@ -10,7 +11,6 @@ import PlotList from './PlotList';
 import ProjectSamplesTable from './ProjectSamplesTable';
 import { PROJ_TABS, PROJ_TABS_LIST } from './projTabConstants';
 import TreeList from './TreeList';
-import { selectIfTreesAvailable } from '../../app/treeSlice';
 
 function ProjectOverview() {
   const { tab } = useParams();

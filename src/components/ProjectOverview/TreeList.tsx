@@ -7,8 +7,8 @@ import {
   type DataTableFilterMetaData,
   type DataTableRowClickEvent,
 } from 'primereact/datatable';
-import React, { useEffect } from 'react';
-import { memo, useState } from 'react';
+import type React from 'react';
+import { memo, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../app/store';
 import { selectTrees } from '../../app/treeSlice';

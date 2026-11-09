@@ -9,10 +9,8 @@ import {
   type SelectChangeEvent,
 } from '@mui/material';
 import React, { useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
 import type { TreeVersion } from '../../../types/dtos';
 import type { PhylocanvasNode } from '../../../types/phylocanvas.interface';
-import { isoDateLocalDate } from '../../../utilities/dateUtils';
 import { Phylocanvas, TreeTypes } from '../PhylocanvasGL';
 import type { TreeExportFunctions } from '../Tree';
 
@@ -33,8 +31,6 @@ interface TreeNavigationProps {
 
 export default function TreeNavigation({
   state,
-  currentVersion,
-  versions,
   selectedIds,
   rootId,
   onChange,
