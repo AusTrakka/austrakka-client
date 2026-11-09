@@ -244,5 +244,48 @@ describe('hasScopeInRecord', () => {
       );
       expect(result).toBe(false);
     });
+
+    test('return true if user has scope in system but the queried on specific record', () => {
+      const groups: GroupedPrivilegesByRecordTypeWithScopes[] = [
+        {
+          recordType: 'System',
+          recordRoles: [
+            {
+              recordName: 'System',
+              recordGlobalId: 'record-id-1',
+              roles: [
+                {
+                  roleName: 'User',
+                  scopes: ['read:basic'],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          recordType: 'Organisation',
+          recordRoles: [
+            {
+              recordName: 'organisation-123',
+              recordGlobalId: 'record-id-2',
+              roles: [
+                {
+                  roleName: 'Admin',
+                  scopes: ['read:users', 'write:users'],
+                },
+              ],
+            },
+          ],
+        },
+      ];
+
+      const result = hasScopeInRecord(
+        groups,
+        'read:basic',
+        'organisation-123',
+        RecordTypes.ORGANISATION,
+      );
+      expect(result).toBe(true);
+    });
   });
 });

@@ -43,15 +43,18 @@ export function formatDate(dateUTC: string): string {
   });
 }
 
-export function formatDateAsTwoStrings(dateUTC: string): string[] {
+export function formatDateAsTwoStrings(
+  dateUTC: string,
+  length: 'short' | 'long' = 'short',
+): string[] {
   if (!dateUTC) return ['', ''];
   if (dateUTC === 'null') return ['', ''];
   if (Number.isNaN(Date.parse(dateUTC))) return ['Invalid Date', ''];
   const date = new Date(dateUTC);
   const dateString = date.toLocaleString('en-AU', {
-    weekday: 'short',
+    weekday: length,
     day: 'numeric',
-    month: 'short',
+    month: length,
     year: 'numeric',
   });
   const timeString = date.toLocaleString('en-AU', {

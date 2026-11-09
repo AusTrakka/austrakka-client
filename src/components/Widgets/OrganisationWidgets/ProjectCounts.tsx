@@ -13,11 +13,11 @@ import type { Sample } from '../../../types/sample.interface';
 import { WidgetType } from '../../../types/widget.props';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 
-// Displays a table of counts of samples by each project (Shared_groups)
-// Requires Shared_groups field to be present in the metadata
+// Displays a table of counts of samples by each project (Projects)
+// Requires Projects field to be present in the metadata
 // Also counts how many of the samples in each project are shared with other projects
 
-const SHARED_GROUPS_FIELD = 'Shared_groups';
+const SHARED_GROUPS_FIELD = 'Projects';
 const UNSHARED_COLUMN = 'Unshared';
 
 type ProjectSharingCount = {
@@ -43,13 +43,11 @@ function calculateSharedGroups(data: Sample[]): ProjectSharingCount[] {
       return;
     }
     const groups = JSON.parse(sample[SHARED_GROUPS_FIELD]);
-    groups
-      .filter((group: string) => group.endsWith('-Group'))
-      .forEach((group: string) => {
-        const name = group.slice(0, -'-Group'.length);
-        if (!groupMembers[name]) groupMembers[name] = new Set();
-        groupMembers[name].add(sample.Seq_ID);
-      });
+    groups.forEach((group: string) => {
+      const name = group;
+      if (!groupMembers[name]) groupMembers[name] = new Set();
+      groupMembers[name].add(sample.Seq_ID);
+    });
   });
 
   const projectNames = Object.keys(groupMembers);

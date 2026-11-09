@@ -16,7 +16,7 @@ export function hasSuperUserRoleInType(groups: GroupedPrivilegesByRecordTypeWith
 }
 
 export function hasScopeInRecord(
-  groups: GroupedPrivilegesByRecordTypeWithScopes[],
+  groupedPrivs: GroupedPrivilegesByRecordTypeWithScopes[],
   scope: string,
   recordName: string = '',
   recordType = RecordTypes.SYSTEM,
@@ -28,10 +28,12 @@ export function hasScopeInRecord(
     throw new Error('Must provide recordName');
   }
   let targetRecordRole: PrivilegeWithRolesWithScopes | undefined;
-  const targetGroup = groups.find((group) => group.recordType === recordType);
+  let notSystem = false;
+  const targetGroup = groupedPrivs.find((group) => group.recordType === recordType);
   if (recordType === RecordTypes.SYSTEM) {
     targetRecordRole = targetGroup?.recordRoles[0];
   } else {
+    notSystem = true;
     targetRecordRole = targetGroup?.recordRoles.find(
       (recordRole) => recordRole.recordName === recordName,
     );
@@ -40,8 +42,19 @@ export function hasScopeInRecord(
     return false; // recordId not found within the specified group
   }
 
-  // Check if any role within this recordRole contains the specified scope
-  return targetRecordRole.roles.some((roleWithScopes) => roleWithScopes.scopes.includes(scope));
+  var systemGroup = groupedPrivs.find((group) => group.recordType === RecordTypes.SYSTEM);
+  var systemRoles = systemGroup?.recordRoles[0];
+  var targetHasRole = targetRecordRole.roles.some((roleWithScopes) =>
+    roleWithScopes.scopes.includes(scope),
+  );
+  var systemHasRole = systemRoles?.roles.some((roleWithScopes) =>
+    roleWithScopes.scopes.includes(scope),
+  );
+
+  if (notSystem) {
+    return targetHasRole || systemHasRole || false;
+  }
+  return targetHasRole || false;
 }
 
 function hasRoleInRecord(

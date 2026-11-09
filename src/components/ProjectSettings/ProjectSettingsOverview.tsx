@@ -16,10 +16,13 @@ import { useAppSelector } from '../../app/store';
 import { selectUserState } from '../../app/userSlice';
 import { Theme } from '../../assets/themes/theme';
 import LoadingState from '../../constants/loadingState';
+import RecordTypes from '../../constants/record-type.enum';
 import { ResponseType } from '../../constants/responseType';
+import { ScopeDefinitions } from '../../constants/scopes';
 import type { Organisation, ProjectDashboardDetails } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
 import { isoDateOrNotRecorded } from '../../utilities/dateUtils';
+import { hasPermissionV2ByScope } from '../../utilities/privCheck';
 import { getAvailableProjectDashboards, getOrganisations } from '../../utilities/resourceUtils';
 import BasicPropertiesSection from './BasicPropertiesSection';
 import ParticipatingOrgsSection from './ParticipatingOrgsSection';
@@ -43,9 +46,14 @@ function ProjectSettingsOverview() {
     message: string;
     severity: AlertColor;
   }>({ open: false, message: '', severity: 'success' });
-  const { superUser, admin } = useAppSelector(selectUserState);
+  const user = useAppSelector(selectUserState);
 
-  const isAdmin = admin || superUser;
+  const isEditor = hasPermissionV2ByScope(
+    user,
+    ScopeDefinitions.UpdateProject,
+    projectAbbrev ?? '',
+    RecordTypes.PROJECT,
+  );
 
   const handleChangesSaved = (severity: AlertColor, message: string) => {
     setSnackbar({ open: true, message, severity });
@@ -65,10 +73,10 @@ function ProjectSettingsOverview() {
       setDashboards(dashboards.map((dashboard) => dashboard.name));
     }
 
-    if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING && isAdmin) {
+    if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING && isEditor) {
       void fetchAvailableDashboards();
     }
-  }, [token, tokenLoading, isAdmin]);
+  }, [token, tokenLoading, isEditor]);
 
   useEffect(() => {
     async function fetchAvailableOrganisations() {
@@ -81,10 +89,10 @@ function ProjectSettingsOverview() {
       setOrganisations(organisations);
     }
 
-    if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING && isAdmin) {
+    if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING && isEditor) {
       void fetchAvailableOrganisations();
     }
-  }, [token, tokenLoading, isAdmin]);
+  }, [token, tokenLoading, isEditor]);
 
   const navigateToSummary = () => {
     if (!projectAbbrev) return;
@@ -223,11 +231,11 @@ function ProjectSettingsOverview() {
           onSaveResult={handleChangesSaved}
           organisations={organisations}
           dashboards={dashboards}
-          editable={isAdmin}
+          editable={isEditor}
         />
         <ParticipatingOrgsSection
           projectAbbrev={projectAbbrev}
-          editable={isAdmin}
+          editable={isEditor}
           onSaveResult={handleChangesSaved}
           organisations={organisations}
         />

@@ -37,12 +37,12 @@ interface MetadataCountWidgetProps extends ProjectWidgetProps {
   filteredData: Sample[];
   timeFilterObject: DataTableFilterMeta;
   field: string; // This is the field parameter the widget will report on
-  categoryField?: string; // This is the y-axis field; defaults to Owner_group
+  categoryField?: string; // This is the y-axis field; defaults to Organisation
   title?: string | undefined; // Optionally, a different title for the widget
 }
 
 const CHART_COLORS = {
-  AVAILABLE: Theme.SecondaryMain,
+  AVAILABLE: Theme.SecondaryLightGreen,
   MISSING: Theme.SecondaryYellow,
 } as const;
 
@@ -50,7 +50,7 @@ function MetadataCounts(props: MetadataCountWidgetProps) {
   const { projectAbbrev, filteredData, timeFilterObject, field, title, categoryField } = props;
 
   const { navigate } = useStableNavigate();
-  const categoryFieldStable = categoryField ?? 'Owner_group';
+  const categoryFieldStable = categoryField ?? 'Organisation';
   const axisTitleStable = categoryField ?? 'Organisation';
 
   const data: ProjectMetadataState | null = useAppSelector(
@@ -76,8 +76,7 @@ function MetadataCounts(props: MetadataCountWidgetProps) {
     if (!item || !item.datum) return;
 
     const status = item.datum[`${field}_status`];
-    let category = item.datum[categoryFieldStable];
-    if (categoryFieldStable === 'Owner_group') category = `${category}-Owner`;
+    const category = item.datum[categoryFieldStable];
 
     const drillDownTableMetaFilters: DataTableFilterMeta = {
       [field]: {

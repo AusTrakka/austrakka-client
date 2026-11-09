@@ -59,7 +59,7 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
         RecordTypes.ORGANISATION,
       );
 
-    if (user.loading === LoadingState.SUCCESS && (orgAbbrev || user.admin)) {
+    if (user.loading === LoadingState.SUCCESS && (orgAbbrev || user.superUser)) {
       // give it an empty string if only the admin check passed in the or condition above
       setCanShare(checkSharingPermissions(orgAbbrev ?? ''));
       setCanDisable(checkDisablePermissions(orgAbbrev ?? ''));
@@ -74,7 +74,7 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
         orgAbbrev,
         RecordTypes.ORGANISATION,
       );
-    if (user.loading === LoadingState.SUCCESS && (orgAbbrev || user.admin)) {
+    if (user.loading === LoadingState.SUCCESS && (orgAbbrev || user.superUser)) {
       setCanChangeOwnership(checkChangeOwnershipPermissions());
     }
   }, [orgAbbrev, user]);

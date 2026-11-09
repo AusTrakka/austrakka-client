@@ -14,8 +14,19 @@ import { formatDateAsTwoStrings } from '../../../utilities/dateUtils';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 import DrilldownButton from '../../Common/DrilldownButton';
 
-function SampleSummary(props: ProjectWidgetProps) {
-  const { projectAbbrev, filteredData, timeFilterObject } = props;
+interface SampleSummaryProps extends ProjectWidgetProps {
+  includeSequenceCount?: boolean;
+  dateLength?: 'short' | 'long';
+}
+
+function SampleSummary(props: SampleSummaryProps) {
+  const {
+    projectAbbrev,
+    filteredData,
+    timeFilterObject,
+    includeSequenceCount = true,
+    dateLength = 'short',
+  } = props;
   const data: ProjectMetadataState | null = useAppSelector((state) =>
     selectProjectMetadata(state, projectAbbrev),
   );
@@ -98,13 +109,19 @@ function SampleSummary(props: ProjectWidgetProps) {
     return (
       <>
         <Typography variant="h2" paddingBottom={1} color="primary">
-          {formatDateAsTwoStrings(maxObj(data!.metadata!.map((sample) => sample.Date_created)))[0]}
+          {
+            formatDateAsTwoStrings(
+              maxObj(data!.metadata!.map((sample) => sample.Date_created)),
+              dateLength,
+            )[0]
+          }
         </Typography>
         <Stack direction="row" spacing={5}>
           <Typography variant="subtitle2" paddingBottom={1} color="primary">
             {
               formatDateAsTwoStrings(
                 maxObj(data!.metadata!.map((sample) => sample.Date_created)),
+                dateLength,
               )[1]
             }
           </Typography>
@@ -125,7 +142,7 @@ function SampleSummary(props: ProjectWidgetProps) {
 
   return (
     <Box maxWidth={900} mr="auto">
-      <Grid container spacing={2} direction="row" justifyContent="space-between">
+      <Grid container spacing={10} direction="row" justifyContent="start">
         {hasCompleteData(data?.loadingState) && (
           <>
             <Grid item>
@@ -149,36 +166,39 @@ function SampleSummary(props: ProjectWidgetProps) {
               </Typography>
               {renderLatestSampleUpload()}
             </Grid>
-            <Grid item>
-              <Typography variant="h5" paddingBottom={1} color="primary">
-                Records without sequences
-              </Typography>
-              {data!.fields!.some((field) => field.columnName === 'Has_sequences') ? (
-                <>
-                  <Typography variant="h2" paddingBottom={1} color="primary">
-                    {filteredData!
-                      .filter((sample) => !sample.Has_sequences)
-                      .length.toLocaleString('en-US') +
-                      (timeFilterObject && Object.keys(timeFilterObject).length > 0
-                        ? ` (${(data!.metadata!.filter((sample) => !sample.Has_sequences).length).toLocaleString('en-US')})`
-                        : '')}
-                  </Typography>
-                  <DrilldownButton
-                    title="View Samples"
-                    onClick={() => handleDrilldownFilters('has_sequence', hasSequenceFilter)}
-                  />
-                </>
-              ) : (
-                <Tooltip
-                  title="Has_sequences is not a project field, so this count is not known"
-                  placement="top"
-                >
-                  <Typography variant="h2" paddingBottom={1} color="primary">
-                    Unknown
-                  </Typography>
-                </Tooltip>
-              )}
-            </Grid>
+
+            {includeSequenceCount && (
+              <Grid item>
+                <Typography variant="h5" paddingBottom={1} color="primary">
+                  Records without sequences
+                </Typography>
+                {data!.fields!.some((field) => field.columnName === 'Has_sequences') ? (
+                  <>
+                    <Typography variant="h2" paddingBottom={1} color="primary">
+                      {filteredData!
+                        .filter((sample) => !sample.Has_sequences)
+                        .length.toLocaleString('en-US') +
+                        (timeFilterObject && Object.keys(timeFilterObject).length > 0
+                          ? ` (${(data!.metadata!.filter((sample) => !sample.Has_sequences).length).toLocaleString('en-US')})`
+                          : '')}
+                    </Typography>
+                    <DrilldownButton
+                      title="View Samples"
+                      onClick={() => handleDrilldownFilters('has_sequence', hasSequenceFilter)}
+                    />
+                  </>
+                ) : (
+                  <Tooltip
+                    title="Has_sequences is not a project field, so this count is not known"
+                    placement="top"
+                  >
+                    <Typography variant="h2" paddingBottom={1} color="primary">
+                      Unknown
+                    </Typography>
+                  </Tooltip>
+                )}
+              </Grid>
+            )}
           </>
         )}
         {data?.errorMessage && (

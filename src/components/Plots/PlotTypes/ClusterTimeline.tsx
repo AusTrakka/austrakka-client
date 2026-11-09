@@ -175,6 +175,25 @@ function ClusterTimeline(props: PlotTypeProps) {
   }, [dateField]);
 
   useEffect(() => {
+    const setDateBinningInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null => {
+      if (oldSpec === null) return null;
+      const newSpec: any = { ...oldSpec };
+      newSpec.encoding = { ...(oldSpec as any).encoding };
+      newSpec.encoding.x = { ...(oldSpec as any).encoding.x };
+
+      if (dateBinUnit === 'none') {
+        delete newSpec.encoding.x.timeUnit;
+      } else {
+        newSpec.encoding.x.timeUnit = { unit: dateBinUnit, step: 1 };
+      }
+
+      return newSpec as TopLevelSpec;
+    };
+
+    setSpec(setDateBinningInSpec);
+  }, [dateBinUnit]);
+
+  useEffect(() => {
     const groupFields: string[] = [];
     if (yAxisField !== 'none') {
       groupFields.push(yAxisField);

@@ -235,16 +235,8 @@ export function pruneColumns(data: any[], columnsToKeep: string[]) {
   });
 }
 
-export function stripOwnerSuffix(value: string): string {
-  return value.split('-Owner')[0];
-}
-
-export function isGroupName(name: string): boolean {
-  return name.endsWith('-Group');
-}
-
 export function getSharedProjectNames(raw: string | undefined): string[] {
   if (!raw) return [];
-  const groups: string[] = JSON.parse(raw).filter(isGroupName);
-  return groups.map((g) => g.slice(0, -'-Group'.length));
+  const groups: string[] = JSON.parse(raw);
+  return groups;
 }
