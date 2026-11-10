@@ -136,8 +136,8 @@ export function GlobalOptions({ pivotConfig, setPivotConfig }: GlobalOptionsProp
   ];
   return (
     <>
-      <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 'bold' }}>
-        Global options
+      <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'bold' }}>
+        Other options
       </Typography>
       <FormGroup sx={{ alignItems: 'flex-start', mb: 1.5 }}>
         {options.map((opt) => (

@@ -32,7 +32,7 @@ function Platform(props: PlatformProps) {
     <>
       <Typography className="pageTitle">Platform</Typography>
       <TabPanel index={PLATFORM_TABS.activity.index} value={tabValue}>
-        <Activity recordType={RecordTypes.SYSTEM} rGuid="" />
+        <Activity recordType={RecordTypes.SYSTEM} rGuid="" hideStatusParam={false} />
       </TabPanel>
     </>
   );

@@ -1,6 +1,5 @@
 import { TableChart, TextSnippet } from '@mui/icons-material';
 import { Box, Card, CardActionArea, CardContent, Grid, Typography } from '@mui/material';
-import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 const uploadPages = [
@@ -22,7 +21,6 @@ const uploadPages = [
 
 function Upload() {
   const location = useLocation();
-  useEffect(() => {}, []);
 
   return (
     <Box>

@@ -87,7 +87,7 @@ export function replaceIntStrings(data: Sample[], fields: Field[], fieldNames: s
   const fieldDetails = getFieldDetails(fieldNames, fields);
   const intFields = fieldDetails.filter(
     (field) =>
-      field.primitiveType === FieldTypes.NUMBER || field.primitiveType === FieldTypes.DOUBLE,
+      field.primitiveType === FieldTypes.INTEGER || field.primitiveType === FieldTypes.DECIMAL,
   );
   intFields.forEach((field) => {
     data.forEach((sample) => {
@@ -141,6 +141,7 @@ export function compareDatesDesc(aDate: Date | null, bDate: Date | null): number
 }
 
 // Given a list of field names, calculate or look up the unique values for the fields
+// Unique values of a field are the distinct non-null, non-empty string representations of the values present in the data for that field
 export function calculateUniqueValues(
   fieldNames: string[],
   fields: Field[],
@@ -172,14 +173,7 @@ export function calculateUniqueValues(
 
   visualisableFields.forEach((field) => {
     const values = Array.from(valueSets[field.columnName]);
-
-    // Remove a single [""] array case
-    if (values.length === 1 && values[0] === '') {
-      uniqueValues[field.columnName] = [];
-    } else {
-      // sort
-      uniqueValues[field.columnName] = values.sort(collator.compare);
-    }
+    uniqueValues[field.columnName] = values.sort(collator.compare);
   });
 
   return uniqueValues;

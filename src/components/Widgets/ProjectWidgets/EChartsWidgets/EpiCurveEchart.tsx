@@ -24,7 +24,7 @@ const FIELDS_AND_COLOURS: string[][] = [
   ['Jurisdiction', 'jurisdiction'],
   ['State', 'jurisdiction'],
   ['Country', 'tableau10'],
-  ['Owner_group', 'tableau10'],
+  ['Organisation', 'tableau10'],
 ];
 
 interface BucketResult {

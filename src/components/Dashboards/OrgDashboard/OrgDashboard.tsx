@@ -185,7 +185,7 @@ function OrgDashboard(props: OrgDashboardProps) {
                         filteredData={data?.metadata ?? []}
                         label="Unshared samples"
                         countWarningLimit={0}
-                        field={'Shared_groups'}
+                        field={'Projects'}
                         countMetric={CountMetric.MISSING}
                       />
                       <SimpleMetadataCount
@@ -370,7 +370,7 @@ function OrgDashboard(props: OrgDashboardProps) {
                     identifier={orgAbbrev}
                     field="Date_coll"
                     title="Metadata counts"
-                    categoryField="Shared_groups"
+                    categoryField="Projects"
                     filteredData={data?.metadata ?? []}
                   />
                 </CardContent>
@@ -382,7 +382,7 @@ function OrgDashboard(props: OrgDashboardProps) {
                   <HasSeq
                     widgetType={WidgetType.Organisation}
                     identifier={orgAbbrev}
-                    categoryField="Shared_groups"
+                    categoryField="Projects"
                     filteredData={data?.metadata ?? []}
                   />
                 </CardContent>
