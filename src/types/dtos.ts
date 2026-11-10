@@ -8,7 +8,6 @@ export interface Project {
   abbreviation: string;
   name: string;
   label: string;
-  clientType: string;
   description: string;
   trees: {
     id: number;
@@ -33,7 +32,6 @@ export interface ProjectPut {
   requestingOrg: string;
   dashboardName: string;
   label: string;
-  clientType: string;
   mergeAlgorithm: MergeAlgorithm;
   status: string;
   watermarkTrees: boolean;
@@ -47,7 +45,6 @@ export interface ProjectDashboardDetails {
 // Summary statistics about a project
 export interface ProjectSummary {
   projectId: number;
-  clientType: string;
   globalId: string;
   abbreviation: string;
   name: string;

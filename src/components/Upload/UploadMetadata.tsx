@@ -155,12 +155,10 @@ function UploadMetadata() {
     async function getProjects() {
       const projectResponse: ResponseObject<Project[]> = await getProjectList(token);
       if (projectResponse.status === ResponseType.Success) {
-        const filteredProjects = projectResponse.data?.filter(
-          ({ clientType }) => !clientType || clientType === import.meta.env.VITE_BRANDING_ID,
-        );
-
         const abbrevs = new Set(projectAbbrevs);
-        const projects = filteredProjects?.filter((project) => abbrevs.has(project.abbreviation));
+        const projects = projectResponse.data?.filter((project) =>
+          abbrevs.has(project.abbreviation),
+        );
         setAvailableProjects(projects ?? []);
       }
     }
