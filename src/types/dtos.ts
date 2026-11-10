@@ -129,6 +129,7 @@ export interface PlotListing {
 
 // may need to add the property position here perchance
 export interface Member {
+  globalId: string;
   username: string;
   roles: string[];
   position: string;
@@ -138,6 +139,7 @@ export interface Member {
   };
   displayName: string;
   contactEmail: string;
+  isAusTrakkaProcess: boolean;
 }
 
 export interface User {
