@@ -4,16 +4,18 @@ import OrgSamplesTable from './OrgSamplesTable';
 interface OrganisationSampleProps {
   canShare: boolean;
   canChangeOwnership: boolean;
+  canDisable: boolean;
   orgAbbrev: string;
   orgName: string;
 }
 
 function OrganisationSamples(props: OrganisationSampleProps) {
-  const { canShare, canChangeOwnership, orgAbbrev, orgName } = props;
+  const { canShare, canChangeOwnership, canDisable, orgAbbrev, orgName } = props;
   return (
     <Box>
       <OrgSamplesTable
         canShare={canShare}
+        canDisable={canDisable}
         orgAbbrev={orgAbbrev}
         canChangeOwnership={canChangeOwnership}
         orgName={orgName}

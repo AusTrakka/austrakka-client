@@ -1,4 +1,5 @@
 import {
+  Block,
   Close,
   IosShare,
   RemoveCircleOutline,
@@ -60,6 +61,8 @@ import ViewSummariesToggle from '../DataSummaries/ViewSummariesToggle';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import sortIcon from '../TableComponents/SortIcon';
 import { useViewportClampedHeight } from '../TableComponents/useViewportClampedHeight';
+import { DisabledBlocked } from './OrgSampleDisable/DisabledBlocked';
+import OrgSampleDisable from './OrgSampleDisable/OrgSampleDisable';
 import { ChangeOwnershipBlocked } from './OrgSampleOwnership/ChangeOwnershipBlocked';
 import OrgSampleOwnership from './OrgSampleOwnership/OrgSampleOwnership';
 import OrgSampleShare from './OrgSampleShare/OrgSampleShare';
@@ -73,13 +76,14 @@ export enum TableType {
 
 interface SamplesProps {
   canShare: boolean;
+  canDisable: boolean;
   canChangeOwnership: boolean;
   orgAbbrev: string;
   orgName: string;
 }
 
 function OrgSamplesTable(props: SamplesProps) {
-  const { canShare, canChangeOwnership, orgAbbrev, orgName } = props;
+  const { canShare, canDisable, canChangeOwnership, orgAbbrev, orgName } = props;
   const { navigate } = useStableNavigate();
   const { compact } = useCompactMode();
   const [sampleTableColumns, setSampleTableColumns] = useState<PrimeReactColumnDefinition[]>([]);
@@ -105,6 +109,8 @@ function OrgSamplesTable(props: SamplesProps) {
   const [openShareDialog, setOpenShareDialog] = useState<boolean>(false);
   const [openUnshareDialog, setOpenUnshareDialog] = useState<boolean>(false);
   const [openShareBlocked, setOpenShareBlocked] = useState(false);
+  const [openDisableDialog, setOpenDisableDialog] = useState<boolean>(false);
+  const [openDisableBlocked, setOpenDisableBlocked] = useState(false);
   const [openOwnershipDialog, setOpenOwnershipDialog] = useState<boolean>(false);
   const [openChangeOwnerBlocked, setOpenChangeOwnerBlocked] = useState(false);
   const [shownSummaryMetadata, setShownSummaryMetadata] = useState(false);
@@ -179,6 +185,7 @@ function OrgSamplesTable(props: SamplesProps) {
 
   const shareBlocked = selectedIds.length === 0 || !canShare;
   const changeOwnerBlocked = selectedIds.length === 0 || !canChangeOwnership;
+  const disableBlocked = selectedIds.length === 0 || !canDisable;
 
   useEffect(() => {
     if (showSelectedRowsOnly && selectedSamples.length > 0) {
@@ -235,6 +242,14 @@ function OrgSamplesTable(props: SamplesProps) {
     }
   };
 
+  const handleDisableClick = () => {
+    if (disableBlocked) {
+      setOpenDisableBlocked(true);
+    } else {
+      setOpenDisableDialog(true);
+    }
+  };
+
   const handleChangeOwnerClick = () => {
     if (changeOwnerBlocked) {
       setOpenChangeOwnerBlocked(true);
@@ -263,38 +278,10 @@ function OrgSamplesTable(props: SamplesProps) {
               {showSelectedRowsOnly ? <Visibility /> : <VisibilityOffOutlined />}
             </IconButton>
           </Tooltip>
-          {true && (
-            <Tooltip title="Transfer samples" placement="top" arrow>
-              <IconButton onClick={handleChangeOwnerClick} size="small">
-                <SwapHorizontalCircle fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          )}
           <>
-            <Tooltip title="Share or unshare samples" placement="top" arrow>
+            <Tooltip title="Configure selected samples" placement="top" arrow>
               <IconButton onClick={(e) => setAnchorEl(e.currentTarget)} size="small">
-                <Box
-                  sx={{
-                    position: 'relative',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: 20,
-                    height: 20,
-                  }}
-                >
-                  <IosShare sx={{ fontSize: 20 }} />
-                  <Settings
-                    sx={{
-                      position: 'absolute',
-                      bottom: -4,
-                      right: -4,
-                      fontSize: 13,
-                      backgroundColor: 'white',
-                      borderRadius: '50%',
-                    }}
-                  />
-                </Box>
+                <Settings />
               </IconButton>
             </Tooltip>
 
@@ -342,6 +329,28 @@ function OrgSamplesTable(props: SamplesProps) {
                     </Box>
                   </ListItemIcon>
                   Unshare samples
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    setAnchorEl(null);
+                    handleDisableClick();
+                  }}
+                >
+                  <ListItemIcon>
+                    <Block fontSize="small" />
+                  </ListItemIcon>
+                  Disable samples
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    setAnchorEl(null);
+                    handleChangeOwnerClick();
+                  }}
+                >
+                  <ListItemIcon>
+                    <SwapHorizontalCircle fontSize="small" />
+                  </ListItemIcon>
+                  Transfer samples
                 </MenuItem>
               </MenuList>
             </Menu>
@@ -427,6 +436,24 @@ function OrgSamplesTable(props: SamplesProps) {
           orgAbbrev={orgAbbrev}
         />
       )}
+      {openDisableDialog && (
+        <OrgSampleDisable
+          open={openDisableDialog}
+          onClose={() => setOpenDisableDialog(false)}
+          selectedSamples={selectedSamples}
+          selectedIds={selectedIds}
+          setSelectedIds={setSelectedIds}
+          orgAbbrev={orgAbbrev}
+        />
+      )}
+      {openDisableBlocked && (
+        <DisabledBlocked
+          canDisable={canDisable}
+          openDisabledBlocked={openDisableBlocked}
+          setOpenDisabledBlocked={setOpenDisableBlocked}
+          selectedIdsLength={selectedIds.length}
+        />
+      )}
       {openChangeOwnerBlocked && (
         <ChangeOwnershipBlocked
           canChangeOwnership={canChangeOwnership}
@@ -441,6 +468,7 @@ function OrgSamplesTable(props: SamplesProps) {
           onClose={() => setOpenOwnershipDialog(false)}
           selectedSamples={selectedSamples}
           selectedIds={selectedIds}
+          setSelectedIds={setSelectedIds}
           orgAbbrev={orgAbbrev}
           orgName={orgName}
         />
@@ -451,16 +479,6 @@ function OrgSamplesTable(props: SamplesProps) {
           openChangeOwnershipBlocked={openChangeOwnerBlocked}
           setOpenChangeOwnershipBlocked={setOpenChangeOwnerBlocked}
           selectedIdsLength={selectedIds.length}
-        />
-      )}
-      {openOwnershipDialog && (
-        <OrgSampleOwnership
-          open={openOwnershipDialog}
-          onClose={() => setOpenOwnershipDialog(false)}
-          selectedSamples={selectedSamples}
-          selectedIds={selectedIds}
-          orgAbbrev={orgAbbrev}
-          orgName={orgName}
         />
       )}
       <Dialog onClose={handleDialogClose} open={exportCSVStatus === LoadingState.ERROR}>

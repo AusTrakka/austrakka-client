@@ -87,7 +87,7 @@ export function replaceIntStrings(data: Sample[], fields: Field[], fieldNames: s
   const fieldDetails = getFieldDetails(fieldNames, fields);
   const intFields = fieldDetails.filter(
     (field) =>
-      field.primitiveType === FieldTypes.NUMBER || field.primitiveType === FieldTypes.DOUBLE,
+      field.primitiveType === FieldTypes.INTEGER || field.primitiveType === FieldTypes.DECIMAL,
   );
   intFields.forEach((field) => {
     data.forEach((sample) => {

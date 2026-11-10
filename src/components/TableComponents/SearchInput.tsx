@@ -18,7 +18,7 @@ function SearchInput({
   label = 'Search',
   value,
   onChange,
-  forceExpanded = false,
+  forceExpanded = true,
   iconSx,
 }: SearchInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
