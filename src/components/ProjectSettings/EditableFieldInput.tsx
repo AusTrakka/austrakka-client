@@ -1,5 +1,15 @@
 import { CancelOutlined, CheckCircleOutlined } from '@mui/icons-material';
-import { FormControl, MenuItem, Select, Switch, TextField, Tooltip } from '@mui/material';
+import {
+  Autocomplete,
+  Box,
+  FormControl,
+  MenuItem,
+  Select,
+  Switch,
+  TextField,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 import { Theme } from '../../assets/themes/theme';
 import { MergeAlgorithm } from '../../constants/mergeAlgorithm';
 import ProjectStatus from '../../constants/projectStatus';
@@ -37,13 +47,36 @@ export const EditableFieldInput = ({
     case 'requestingOrg':
       return (
         <FormControl fullWidth size="small" variant="filled" hiddenLabel>
-          <Select value={value ?? ''} onChange={(e) => onChange(e.target.value)} displayEmpty>
-            {organisations.map((org: { name: string; abbrev: string }) => (
-              <MenuItem key={org.abbrev} value={org.abbrev}>
-                {`${org.name} (${org.abbrev})`}
-              </MenuItem>
-            ))}
-          </Select>
+          <Autocomplete<{ name: string; abbrev: string }>
+            fullWidth
+            size="small"
+            options={organisations || []}
+            getOptionLabel={(option) => option.abbrev || ''}
+            renderOption={(props, option) => {
+              const { key, ...optionProps } = props;
+              return (
+                <Box component="li" key={key || option.abbrev} {...optionProps}>
+                  <Typography sx={{ mr: 1 }}>{option.abbrev}</Typography>
+                  <Typography color="text.secondary">— {option.name}</Typography>
+                </Box>
+              );
+            }}
+            isOptionEqualToValue={(option, value) => option.abbrev === value.abbrev}
+            value={organisations?.find((org) => org.abbrev === value) ?? null}
+            onChange={(_, newOrg) => onChange(newOrg?.abbrev ?? '')}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="filled"
+                hiddenLabel
+                slotProps={{
+                  htmlInput: {
+                    ...params.inputProps,
+                  },
+                }}
+              />
+            )}
+          />
         </FormControl>
       );
     case 'status':

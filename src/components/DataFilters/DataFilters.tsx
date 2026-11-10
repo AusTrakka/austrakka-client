@@ -143,6 +143,10 @@ function DataFilters(props: DataFiltersProps) {
     constraint: { value: any; matchMode: FilterMatchMode };
   } | null>(null);
 
+  // Get the unique, non-empty values for a given field
+  const getFilterValues = (field: string) =>
+    (fieldUniqueValues?.[field] ?? []).filter((v) => v !== '');
+
   useEffect(() => {
     setRowCount(filteredDataLength);
     setTotalRows(dataLength);
@@ -174,7 +178,7 @@ function DataFilters(props: DataFiltersProps) {
       let defaultCondition = '';
       let fieldType: FieldTypes = FieldTypes.STRING;
 
-      const uniqueValuesForField = fieldUniqueValues?.[value];
+      const uniqueValuesForField = getFilterValues(value);
 
       // this changes the filter options based on the field type
       if (targetFieldProps?.primitiveType === FieldTypes.DATE) {
@@ -182,8 +186,8 @@ function DataFilters(props: DataFiltersProps) {
         fieldType = FieldTypes.DATE;
         defaultCondition = FilterMatchMode.DATE_IS;
       } else if (
-        targetFieldProps?.primitiveType === FieldTypes.NUMBER ||
-        targetFieldProps?.primitiveType === FieldTypes.DOUBLE
+        targetFieldProps?.primitiveType === FieldTypes.INTEGER ||
+        targetFieldProps?.primitiveType === FieldTypes.DECIMAL
       ) {
         setConditions(numberConditions);
         fieldType = targetFieldProps.primitiveType;
@@ -268,7 +272,7 @@ function DataFilters(props: DataFiltersProps) {
 
   const handleStringValueSelector = () => {
     // this will check if the selectedField has unique values to pull from
-    const uniqueValues: string[] | null = fieldUniqueValues?.[filterFormValues.field] ?? [];
+    const uniqueValues: string[] | null = getFilterValues(filterFormValues.field) ?? [];
 
     // only show drop-down if it has valid values and the condition in a direct comparison or is In
     if (
@@ -332,8 +336,8 @@ function DataFilters(props: DataFiltersProps) {
         variant="outlined"
         name="value"
         type={
-          filterFormValues.fieldType === FieldTypes.NUMBER ||
-          filterFormValues.fieldType === FieldTypes.DOUBLE
+          filterFormValues.fieldType === FieldTypes.INTEGER ||
+          filterFormValues.fieldType === FieldTypes.DECIMAL
             ? 'number'
             : undefined
         }
@@ -343,8 +347,8 @@ function DataFilters(props: DataFiltersProps) {
         }}
         size="small"
         inputProps={
-          filterFormValues.fieldType === FieldTypes.NUMBER ||
-          filterFormValues.fieldType === FieldTypes.DOUBLE
+          filterFormValues.fieldType === FieldTypes.INTEGER ||
+          filterFormValues.fieldType === FieldTypes.DECIMAL
             ? { step: 'any' }
             : { maxLength: 25 }
         }
@@ -543,12 +547,12 @@ function DataFilters(props: DataFiltersProps) {
     let newConditions = stringConditions;
     if (fieldType === FieldTypes.DATE) {
       newConditions = dateConditions;
-    } else if (fieldType === FieldTypes.NUMBER || fieldType === FieldTypes.DOUBLE) {
+    } else if (fieldType === FieldTypes.INTEGER || fieldType === FieldTypes.DECIMAL) {
       newConditions = numberConditions;
     } else if (fieldType === FieldTypes.BOOLEAN) {
       newConditions = booleanConditions;
     } else {
-      const uniqueValuesForField = fieldUniqueValues?.[_fieldName];
+      const uniqueValuesForField = getFilterValues(_fieldName);
       newConditions =
         uniqueValuesForField && uniqueValuesForField.length > 0
           ? [...stringConditions, ...stringInConditions]

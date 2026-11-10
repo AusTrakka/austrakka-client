@@ -33,6 +33,7 @@ interface OrgSampleOwnershipProps {
   onClose: () => void;
   selectedSamples: Sample[];
   selectedIds: string[];
+  setSelectedIds: (ids: string[]) => void;
   orgName: string;
   orgAbbrev: string;
 }
@@ -46,7 +47,7 @@ type SubmitStatusProps = {
 };
 
 function OrgSampleOwnership(props: OrgSampleOwnershipProps) {
-  const { open, onClose, selectedSamples, selectedIds, orgAbbrev, orgName } = props;
+  const { open, onClose, selectedSamples, selectedIds, setSelectedIds, orgAbbrev, orgName } = props;
   const { token, tokenLoading } = useApi();
   const user: UserSliceState = useAppSelector(selectUserState);
   const [selectableOrgGroups, setSelectableOrgGroups] = useState<string[]>([]);
@@ -92,6 +93,7 @@ function OrgSampleOwnership(props: OrgSampleOwnershipProps) {
           await new Promise<void>((resolve) => {
             setTimeout(resolve, 500);
           });
+          setSelectedIds([]);
           dispatch(reloadOrgMetadata({ token, orgAbbrev }));
         } else {
           setStatusMessage(response.message || 'Failed to transfer samples. Please try again.');

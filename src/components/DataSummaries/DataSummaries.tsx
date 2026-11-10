@@ -1,7 +1,7 @@
 import { RestartAlt, SwapHoriz, Tune } from '@mui/icons-material';
 import {
-  Badge,
   Box,
+  Button,
   CircularProgress,
   IconButton,
   Stack,
@@ -177,25 +177,22 @@ function DataSummaries(props: DataSummariesProps) {
       <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
         <ViewSummariesToggle activeTable={activeTable} setActiveTable={setActiveTable} />
         <Stack direction="row" spacing={1} alignItems="center">
-          <Tooltip title="Configure table fields" arrow>
-            <IconButton size="small" onClick={() => setConfigDrawerOpen(true)}>
-              <Badge
-                badgeContent={pivotConfig.displayFields.length + pivotConfig.groupByFields.length}
-                color="primary"
-                sx={{
-                  '& .MuiBadge-badge': { backgroundColor: Theme.PrimaryMain },
-                }}
-              >
-                <Tune fontSize="small" />
-              </Badge>
-            </IconButton>
-          </Tooltip>
-
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<Tune fontSize="small" />}
+            onClick={() => setConfigDrawerOpen(true)}
+            sx={{ textTransform: 'none' }}
+          >
+            <Typography variant="button" component="span" sx={{ textTransform: 'none' }}>
+              Configure table
+            </Typography>
+          </Button>
           <Tooltip
             title={
               orientation === TableOrientation.FieldsHorizontal
-                ? 'Show display fields as rows'
-                : 'Show display fields as columns'
+                ? 'Show aggregation fields as rows'
+                : 'Show aggregation fields as columns'
             }
             arrow
           >
