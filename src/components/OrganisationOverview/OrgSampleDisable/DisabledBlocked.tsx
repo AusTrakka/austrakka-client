@@ -19,8 +19,7 @@ export function DisabledBlocked(props: DisabledBlockedProps) {
           Incorrect permissions
         </Typography>
         <Typography variant="body1">
-          Only users with <strong>Uploader</strong> permissions for the organisation&apos;s Owner
-          group can disable samples.
+          You do not have the correct permissions to disable samples.
         </Typography>
       </>
     );
