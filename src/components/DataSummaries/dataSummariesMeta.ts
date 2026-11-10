@@ -73,8 +73,8 @@ export const FIELD_TYPE_AGGREGATION_TYPES: Record<FieldTypes, AggregationType[]>
   [FieldTypes.STRING]: [...AGG_TYPE_DEFAULT],
   [FieldTypes.DATE]: [...AGG_TYPE_DEFAULT],
   [FieldTypes.BOOLEAN]: [...AGG_TYPE_DEFAULT],
-  [FieldTypes.NUMBER]: [...AGG_TYPE_DEFAULT, ...AGG_TYPE_NUMERIC],
-  [FieldTypes.DOUBLE]: [...AGG_TYPE_DEFAULT, ...AGG_TYPE_NUMERIC],
+  [FieldTypes.INTEGER]: [...AGG_TYPE_DEFAULT, ...AGG_TYPE_NUMERIC],
+  [FieldTypes.DECIMAL]: [...AGG_TYPE_DEFAULT, ...AGG_TYPE_NUMERIC],
 };
 
 // Set of aggregation types that can be summed across groups for the footer row
