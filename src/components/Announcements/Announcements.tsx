@@ -29,6 +29,8 @@ import {
 } from '../../utilities/resourceUtils';
 import CustomDrawer from '../Common/CustomDrawer';
 import ChangesDialog from '../Users/MainViews/ChangesDialog';
+import { MAX_FILENAME_LENGTH } from '../ProjectDocuments/ProjectDocuments';
+import InputAdornment from '@mui/material/InputAdornment';
 
 const messageDuration = 8000;
 
@@ -557,22 +559,26 @@ function Announcements() {
                     <TextField
                         label="Subject"
                         value={subject}
+                        type="text"
                         onChange={(event) => setSubject(event.target.value)}
                         fullWidth
                         required
+                        variant="outlined"
                         size="small"
-                        placeholder="Write your announcement subject here"
+                        placeholder="Write your subject here"
                     />
                     <TextField
                         label="Message"
+                        type="text"
                         value={body}
+                        variant="outlined"
                         onChange={(event) => setBody(event.target.value)}
                         fullWidth
                         required
                         multiline
-                        minRows={18}
-                        maxRows={18}
-                        placeholder="Write your announcement body here"
+                        minRows={14}
+                        maxRows={14}
+                        placeholder="Write your body here"
                     />
                 </Stack>
             </Paper>
@@ -669,10 +675,10 @@ function Announcements() {
                         setShowSystemConfirmation(false);
                     }
                 }}>
-                <Typography variant="body2" fontSize=".9rem" textAlign={'center'}>
+                <Typography variant="body2" textAlign={'center'}>
                     Sending a System-Wide announcement to {users.length} users
                 </Typography>
-                <Typography variant="body2" fontSize=".9rem" textAlign={'center'}>
+                <Typography variant="body2" textAlign={'center'}>
                     Are you sure you want to continue?
                 </Typography>
             </ChangesDialog>
