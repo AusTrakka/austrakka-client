@@ -12,6 +12,7 @@ import PublicHealthDefaultDashboard from '../components/Dashboards/Templates/Pub
 import PublicHealthDefaultEchartsDashboard from '../components/Dashboards/Templates/PublicHealthDefaultEchartsDashboard';
 import PublicHealthDefaultEchartsDashboardV2 from '../components/Dashboards/Templates/PublicHealthDefaultEchartsDashboardV2';
 import PublicHealthInternationalDashboard from '../components/Dashboards/Templates/PublicHealthInternationalDashboard';
+import PublicHealthInternationalEchartsDashboard from '../components/Dashboards/Templates/PublicHealthInternationalEchartsDashboard';
 import SEDemoDashboard from '../components/Dashboards/Templates/SEDemoDashboard';
 import SEDemoEchartsDashboard from '../components/Dashboards/Templates/SEDemoEchartsDashboard';
 import SnapDashboard from '../components/Dashboards/Templates/SnapDashboard';
@@ -29,6 +30,7 @@ const DashboardTemplates: Record<string, React.FC<ProjectDashboardTemplateProps>
   'public-health-default-echarts': PublicHealthDefaultEchartsDashboard,
   'public-health-default-v2-echarts': PublicHealthDefaultEchartsDashboardV2,
   'public-health-international': PublicHealthInternationalDashboard,
+  'public-health-international-echarts': PublicHealthInternationalEchartsDashboard,
   demo: DemoDashboard,
   'demo-echarts': DemoEchartsDashboard,
   default: DefaultDashboard,
