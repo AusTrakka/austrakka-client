@@ -128,12 +128,11 @@ function EpiCurveEchart(props: EpiCurveChartProps) {
   }, [data?.fields, data?.loadingState, data?.errorMessage, widgetType, alternateTimeAxisField]);
 
   const timeFilterDescription = useMemo(() => {
-    if (timeFilterObject && Object.keys(timeFilterObject).length > 0) {
-      const { value } = (timeFilterObject[dateFilterField] as DataTableOperatorFilterMetaData)
-        .constraints[0];
-      return `${dateFilterField} after ${formatDate(value)}`;
-    }
-    return 'all time';
+    const filter = timeFilterObject?.[dateFilterField] as
+      | DataTableOperatorFilterMetaData
+      | undefined;
+    const value = filter?.constraints?.[0]?.value;
+    return value ? `${dateFilterField} after ${formatDate(value)}` : 'all time';
   }, [timeFilterObject, dateFilterField]);
 
   // 4. Bin unit
