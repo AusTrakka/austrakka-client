@@ -10,6 +10,7 @@ import OFNDashboard from '../components/Dashboards/Templates/OFNDashboard';
 import OFNEchartsDashboard from '../components/Dashboards/Templates/OFNEchartsDashboard';
 import PublicHealthDefaultDashboard from '../components/Dashboards/Templates/PublicHealthDefaultDashboard';
 import PublicHealthDefaultEchartsDashboard from '../components/Dashboards/Templates/PublicHealthDefaultEchartsDashboard';
+import PublicHealthDefaultEchartsDashboardV2 from '../components/Dashboards/Templates/PublicHealthDefaultEchartsDashboardV2';
 import PublicHealthInternationalDashboard from '../components/Dashboards/Templates/PublicHealthInternationalDashboard';
 import SEDemoDashboard from '../components/Dashboards/Templates/SEDemoDashboard';
 import SEDemoEchartsDashboard from '../components/Dashboards/Templates/SEDemoEchartsDashboard';
@@ -26,6 +27,7 @@ import type ProjectDashboardTemplateProps from '../types/projectdashboardtemplat
 const DashboardTemplates: Record<string, React.FC<ProjectDashboardTemplateProps>> = {
   'public-health-default': PublicHealthDefaultDashboard,
   'public-health-default-echarts': PublicHealthDefaultEchartsDashboard,
+  'public-health-default-v2-echarts': PublicHealthDefaultEchartsDashboardV2,
   'public-health-international': PublicHealthInternationalDashboard,
   demo: DemoDashboard,
   'demo-echarts': DemoEchartsDashboard,
