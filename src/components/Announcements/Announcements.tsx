@@ -29,10 +29,10 @@ import {
 } from '../../utilities/resourceUtils';
 import CustomDrawer from '../Common/CustomDrawer';
 import ChangesDialog from '../Users/MainViews/ChangesDialog';
-import { MAX_FILENAME_LENGTH } from '../ProjectDocuments/ProjectDocuments';
-import InputAdornment from '@mui/material/InputAdornment';
+
 
 const messageDuration = 8000;
+const subjectMaxLength = 200;
 
 enum RecipientTypes {
     User = 'User',
@@ -566,6 +566,12 @@ function Announcements() {
                         variant="outlined"
                         size="small"
                         placeholder="Write your subject here"
+                        helperText={`${subject.length}/${subjectMaxLength}`}
+                        slotProps={{
+                            htmlInput: {
+                                maxLength: subjectMaxLength
+                            }
+                        }}
                     />
                     <TextField
                         label="Message"
