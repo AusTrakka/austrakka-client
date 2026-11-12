@@ -33,23 +33,27 @@ interface BucketResult {
   countsByField: Record<string, number[]>;
 }
 
-function getBucketStart(d: Date, timeBinSpec: { unit: string; step: number }): Date {
-  switch (timeBinSpec.unit) {
+// Get the start of the bucket or 'offset' buckets after it
+function getBucket(d: Date, spec: { unit: string; step: number }, offset = 0): Date {
+  const y = d.getFullYear();
+  const m = d.getMonth();
+  const day = d.getDate();
+
+  switch (spec.unit) {
     case 'day':
-      return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      return new Date(y, m, day + offset);
     case 'week': {
-      const day = d.getDay();
-      const diff = day === 0 ? -6 : 1 - day;
-      return new Date(d.getFullYear(), d.getMonth(), d.getDate() + diff);
+      const diff = d.getDay() === 0 ? -6 : 1 - d.getDay();
+      return new Date(y, m, day + diff + 7 * offset);
     }
     case 'month': {
-      const month = Math.floor(d.getMonth() / timeBinSpec.step) * timeBinSpec.step;
-      return new Date(d.getFullYear(), month, 1);
+      const start = Math.floor(m / spec.step) * spec.step;
+      return new Date(y, start + spec.step * offset, 1);
     }
     case 'year':
-      return new Date(d.getFullYear(), 0, 1);
+      return new Date(y + offset, 0, 1);
     default:
-      return new Date(d.getFullYear(), d.getMonth(), 1);
+      return new Date(y, m + offset, 1);
   }
 }
 
@@ -176,7 +180,7 @@ function EpiCurveEchart(props: EpiCurveChartProps) {
       const d = new Date(raw);
       if (Number.isNaN(d.getTime())) continue;
 
-      const bucket = getBucketStart(d, timeBinSpec);
+      const bucket = getBucket(d, timeBinSpec);
       const bucketKey = bucket.toISOString();
       const fieldValue = colorField ? String(row[colorField] ?? '') : FLAT_KEY;
       const compositeKey = `${bucketKey}||${fieldValue}`;
@@ -192,7 +196,16 @@ function EpiCurveEchart(props: EpiCurveChartProps) {
       }
     }
 
-    const bucketKeys = [...allBucketKeys].sort();
+    // Include all intermediate buckets even if they have no data
+    const sorted = [...allBucketKeys].sort();
+    const bucketKeys: string[] = [];
+    const last = sorted.length ? new Date(sorted[sorted.length - 1]) : null;
+    if (last) {
+      for (let d = new Date(sorted[0]); d <= last; d = getBucket(d, timeBinSpec, 1)) {
+        bucketKeys.push(d.toISOString());
+      }
+    }
+
     const fieldValues = [...allFieldValues].sort();
 
     const countsByField = Object.fromEntries(
@@ -212,7 +225,6 @@ function EpiCurveEchart(props: EpiCurveChartProps) {
 
     const { bucketKeys, fieldValues, countsByField } = bucketResult;
     const isGrouped = colorField !== null;
-    // ifGroupsed
 
     return {
       legend: isGrouped
@@ -247,22 +259,14 @@ function EpiCurveEchart(props: EpiCurveChartProps) {
         appendTo: () => document.body,
         axisPointer: { type: 'shadow' },
         formatter: (params: any) => {
-          const item = Array.isArray(params) ? params[0] : params;
-          const label = formatBucketLabel(new Date(item.value[0]), timeBinSpec);
-
           if (!isGrouped) {
-            return `${label}<br/>${item.marker} <strong>${item.value[1]}</strong>`;
+            return `${params.name}<br/>${params.marker} <strong>${params.value}</strong>`;
           }
-
-          const bucketIndex = bucketResult.bucketKeys.findIndex(
-            (bk) => new Date(bk).getTime() === item.value[0],
-          );
-          const total = bucketResult.fieldValues.reduce(
-            (sum, fv) => sum + (bucketResult.countsByField[fv][bucketIndex] ?? 0),
+          const total = fieldValues.reduce(
+            (sum, fv) => sum + (countsByField[fv][params.dataIndex] ?? 0),
             0,
           );
-
-          return `${label}<br/>${item.marker}${item.seriesName}: <strong>${item.value[1]}</strong><br/>Total: <strong>${total}</strong>`;
+          return `${params.name}<br/>${params.marker}${params.seriesName}: <strong>${params.value}</strong><br/>Total: <strong>${total}</strong>`;
         },
       },
       grid: {
@@ -272,12 +276,10 @@ function EpiCurveEchart(props: EpiCurveChartProps) {
         left: 80,
       },
       xAxis: {
-        type: 'time',
-        axisLabel: {
-          formatter: (value: number) => formatBucketLabel(new Date(value), timeBinSpec),
-          rotate: 0,
-          hideOverlap: true,
-        },
+        type: 'category',
+        data: bucketKeys.map((bk) => formatBucketLabel(new Date(bk), timeBinSpec)),
+        axisTick: { show: true, alignWithLabel: true },
+        axisLabel: { rotate: 0, hideOverlap: true },
         name: alternateTimeAxisField
           ? `${alternateTimeAxisField}`
           : 'Sample collected date (Date_coll)',
@@ -297,7 +299,7 @@ function EpiCurveEchart(props: EpiCurveChartProps) {
         stack: 'total',
         barGap: '0%',
         barCategoryGap: '1px',
-        data: countsByField[fv].map((count, i) => [new Date(bucketKeys[i]).getTime(), count]),
+        data: countsByField[fv],
         itemStyle: isGrouped
           ? { color: colorMap?.[fv] ?? NULL_COLOUR }
           : { color: Theme.SecondaryDarkGreen },
