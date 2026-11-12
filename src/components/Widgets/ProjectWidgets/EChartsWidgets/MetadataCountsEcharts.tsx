@@ -144,6 +144,8 @@ function MetadataCounts({
     };
   }, [filteredData, field, categoryFieldStable]);
 
+  const hasMissing = useMemo(() => missingCounts.some((count) => count > 0), [missingCounts]);
+
   const chartHeight = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, categories.length * ROW_HEIGHT));
 
   const handleClick = useCallback(
@@ -236,7 +238,7 @@ function MetadataCounts({
         itemHeight: 10,
         data: ['Available', 'Missing'],
         selected: {
-          Available: false,
+          Available: !hasMissing, // Show "Available" series by default only if there are no missing counts
           Missing: true,
         },
       },
@@ -304,7 +306,15 @@ function MetadataCounts({
     };
 
     chart.setOption(option, true);
-  }, [categories, availableCounts, missingCounts, axisTitleStable, errorMessage, handleClick]);
+  }, [
+    categories,
+    availableCounts,
+    missingCounts,
+    hasMissing,
+    axisTitleStable,
+    errorMessage,
+    handleClick,
+  ]);
 
   useEffect(() => {
     if (!chartRef.current) return;
