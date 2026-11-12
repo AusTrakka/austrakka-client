@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import type { TopLevelSpec } from 'vega-lite';
 import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
+import { FieldTypes } from '../../../constants/fieldTypes';
 import { defaultDiscreteColorScheme } from '../../../constants/schemes';
 import type { ProjectViewField } from '../../../types/dtos';
 import type PlotTypeProps from '../../../types/plottypeprops.interface';
@@ -82,7 +83,8 @@ function BarChart(props: PlotTypeProps) {
     if (fields && fields.length > 0) {
       const localCatFields: ProjectViewField[] = fields.filter(
         (field) =>
-          field.canVisualise && (field.primitiveType === 'string' || field.primitiveType === null),
+          field.canVisualise &&
+          (field.primitiveType === FieldTypes.STRING || field.primitiveType === null),
       );
       setCategoricalFields(localCatFields.map((field) => field.columnName));
       // Note we do not set a preferred starting colour field; starting value is None

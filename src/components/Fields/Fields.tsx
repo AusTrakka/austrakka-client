@@ -158,7 +158,7 @@ function Fields() {
     const setNullsToCategorical = (inputFields: MetaDataColumn[]) => {
       inputFields.forEach((field) => {
         if (field.primitiveType === null) {
-          field.primitiveType = 'categorical';
+          field.primitiveType = 'categorical'; // TODO: Check if primitiveType categorical is possible
         }
       });
     };

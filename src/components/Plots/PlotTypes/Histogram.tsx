@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import type { TopLevelSpec } from 'vega-lite';
 import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
+import { FieldTypes } from '../../../constants/fieldTypes';
 import { defaultDiscreteColorScheme } from '../../../constants/schemes';
 import type { ProjectViewField } from '../../../types/dtos';
 import type PlotTypeProps from '../../../types/plottypeprops.interface';
@@ -73,14 +74,15 @@ function Histogram(props: PlotTypeProps) {
   useEffect(() => {
     if (fields && fields.length > 0) {
       const localNumericFields: ProjectViewField[] = fields.filter(
-        (field) => field.primitiveType === 'number' || field.primitiveType === 'double',
+        (field) =>
+          field.primitiveType === FieldTypes.INTEGER || field.primitiveType === FieldTypes.DECIMAL,
       );
       setNumericFields(localNumericFields.map((field) => field.columnName));
       const localCatFields = fields
         .filter(
           (field) =>
             field.canVisualise &&
-            (field.primitiveType === 'string' || field.primitiveType === null),
+            (field.primitiveType === FieldTypes.STRING || field.primitiveType === null),
         )
         .map((field) => field.columnName);
       setCategoricalFields(localCatFields);

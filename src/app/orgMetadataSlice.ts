@@ -1,4 +1,5 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import { FieldTypes } from '../constants/fieldTypes';
 import {
   DATE_CREATED,
   DATE_UPDATED,
@@ -418,7 +419,7 @@ export const orgMetadataSlice = createSlice({
 
       // Visualisable string field unique values must be calculated
       const visualisableFields = fields.filter(
-        (field) => field.canVisualise && field.primitiveType === 'string',
+        (field) => field.canVisualise && field.primitiveType === FieldTypes.STRING,
       );
       const valueSets: Record<string, Set<string>> = {};
       visualisableFields.forEach((field) => {
