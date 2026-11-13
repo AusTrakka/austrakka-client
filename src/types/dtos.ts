@@ -4,9 +4,9 @@ import type { MergeAlgorithm } from '../constants/mergeAlgorithm';
 // These are view models; should correspond to server-side DTO.
 
 export interface Announcement {
-  users: string[],
-  subject: string,
-  body: string,
+  users: string[];
+  subject: string;
+  body: string;
 }
 
 export interface Project {

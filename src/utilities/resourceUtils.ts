@@ -576,7 +576,6 @@ export const removeProjectOrganisations = async (
 const announcementRoot = '/api/Announcement';
 
 export const createAnnouncement = async (
-    data: Announcement,
-    token: string
-): Promise<ResponseObject> =>
-    await callPost(`${announcementRoot}`, token, data);
+  data: Announcement,
+  token: string,
+): Promise<ResponseObject> => await callPost(`${announcementRoot}`, token, data);

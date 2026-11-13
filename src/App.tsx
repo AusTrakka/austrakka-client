@@ -14,6 +14,7 @@ import 'dayjs/locale/en-gb';
 import { AppContainer, CompactModeProvider } from './app/CompactModeContext';
 import muiTheme from './assets/themes/theme';
 import Users from './components/Admin/Users';
+import Announcements from './components/Announcements/Announcements';
 import UserDashboard from './components/Dashboards/UserDashboard/UserDashboard';
 import Fields from './components/Fields/Fields';
 import MainMenuLayout from './components/Layouts/MainMenuLayout';
@@ -38,7 +39,6 @@ import UserDetailOverview from './components/Users/MainViews/UserDetailOverview'
 import UserProvider from './providers/UserProvider';
 import { msalInstance } from './utilities/authUtils';
 import CustomNavigationClient from './utilities/NavigationClient';
-import Announcements from './components/Announcements/Announcements';
 
 function App() {
   const navigate = useNavigate();

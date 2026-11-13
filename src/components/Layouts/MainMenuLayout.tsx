@@ -1,6 +1,7 @@
 import {
   AccountCircle,
-  AccountTree, Announcement,
+  AccountTree,
+  Announcement,
   Dashboard,
   DensityMedium,
   DensitySmall,
@@ -11,7 +12,7 @@ import {
   Inventory,
   KeyboardDoubleArrowLeft,
   KeyboardDoubleArrowRight,
-  People, Speaker,
+  People,
   Terminal,
   Upload,
   ViewColumn,
