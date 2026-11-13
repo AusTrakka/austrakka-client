@@ -146,9 +146,6 @@ export default defineConfig({
       VITE_BRANDING_SIDEBAR_NAME_ENABLED: (key, value) => {
         return defaultConfigValueBoolean(key, value, BrandingDefaultValues.SidebarNameEnabled)
       },
-      VITE_BRANDING_ID: (key, value) => {
-        return defaultConfigValue(key, value, BrandingDefaultValues.Id)
-      },
       VITE_DOCS_URL: (key, value) => {
         return defaultConfigValue(key, value, DocsDefaultValues.Url)
       },
@@ -230,7 +227,6 @@ enum BrandingDefaultValues {
   Tagline1 = "From genomics to public health decisions",
   Tagline2 = "",
   SidebarNameEnabled = "false",
-  Id = "aardvark",
 }
 
 enum DocsDefaultValues {

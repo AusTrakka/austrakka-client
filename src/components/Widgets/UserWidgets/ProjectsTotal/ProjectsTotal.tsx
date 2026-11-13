@@ -57,14 +57,12 @@ export default function ProjectsTotal() {
         await getUserDashboardProjects(token);
       if (projectResponse.data && projectResponse.status === ResponseType.Success) {
         const { data } = projectResponse;
-        const processedProjs = data
-          .filter((p: ProjectSummary) => p.clientType === import.meta.env.VITE_BRANDING_ID)
-          .sort((a: ProjectSummary, b: ProjectSummary) =>
-            compareProperties(a, b, [
-              [(x) => x.latestSequenceDate, -1],
-              [(x) => x.latestSampleDate, -1],
-            ]),
-          );
+        const processedProjs = data.sort((a: ProjectSummary, b: ProjectSummary) =>
+          compareProperties(a, b, [
+            [(x) => x.latestSequenceDate, -1],
+            [(x) => x.latestSampleDate, -1],
+          ]),
+        );
         setProjects(processedProjs);
       } else {
         setErrorMessage(projectResponse.error);
