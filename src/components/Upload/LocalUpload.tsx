@@ -218,12 +218,12 @@ function LocalUpload() {
       >
         <Grid size={{ md: 12, lg: 9 }}>
           <Typography variant="subtitle2" paddingBottom={1}>
-            Drag-and-drop a sample metadata file or tree file to add it to your project.
+            Drag-and-drop a sample metadata file or tree file to add it.
             <br />
             Metadata can be added in tabular (CSV) format. The Seq_ID column will be used as the
             unique identifier to match to tree nodes.
             <br />
-            Trees can be added in newick format.
+            Trees can be added in newick format. Multiple newick trees can be added in succession.
           </Typography>
         </Grid>
       </Grid>
