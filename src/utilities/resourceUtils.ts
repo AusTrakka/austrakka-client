@@ -1,5 +1,6 @@
 import RecordTypes from '../constants/record-type.enum';
 import type {
+  Announcement,
   CreateMsg,
   DerivedLog,
   FeedbackPost,
@@ -38,11 +39,6 @@ import {
   downloadFile,
   previewFile,
 } from './api';
-
-// todo: consider defining the root paths (e.g /api/Projects)
-//  as variables to shorten the code in this file and make refactor more flexible
-
-// todo: should we also consider grouping methods under namespace objects? feels a bit messy in here
 
 // Definition of endpoints
 
@@ -575,3 +571,11 @@ export const removeProjectOrganisations = async (
   token: string,
 ): Promise<ResponseObject> =>
   await callPATCH(`${projectRoot}/${identifier}/Organisations/Remove`, token, data);
+
+// Announcement Endpoints
+const announcementRoot = '/api/Announcement';
+
+export const createAnnouncement = async (
+  data: Announcement,
+  token: string,
+): Promise<ResponseObject> => await callPost(`${announcementRoot}`, token, data);

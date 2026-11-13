@@ -116,10 +116,10 @@
 }
 
 /* 3. Root containers for Standard, Outlined, and Autocomplete fields */
-.app-container.compact-mode .MuiInput-root,
-.app-container.compact-mode .MuiOutlinedInput-root,
-.app-container.compact-mode .MuiAutocomplete-inputRoot,
-.app-container.compact-mode .MuiSelect-root {
+.app-container.compact-mode .MuiInput-root:not(.MuiInputBase-multiline),
+.app-container.compact-mode .MuiOutlinedInput-root:not(.MuiInputBase-multiline),
+.app-container.compact-mode .MuiAutocomplete-inputRoot:not(.MuiInputBase-multiline),
+.app-container.compact-mode .MuiSelect-root:not(.MuiInputBase-multiline) {
   height: var(--density-row-height);
   min-height: var(--density-row-height);
 }
