@@ -21,7 +21,6 @@ import { Column } from 'primereact/column';
 import { DataTable, type DataTableRowClickEvent } from 'primereact/datatable';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import './Samples.css';
-import { memo } from 'react';
 import { useCompactMode } from '../../app/CompactModeContext';
 import { useStableNavigate } from '../../app/NavigationContext';
 import { type ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
@@ -382,4 +381,4 @@ function ProjectSamplesTable(props: SamplesProps) {
   );
 }
 
-export default memo(ProjectSamplesTable);
+export default ProjectSamplesTable;

@@ -8,10 +8,6 @@ export const LOCAL_PROJECT: Project = {
   name: 'Local',
   description: 'Local data',
   label: 'Local',
-  projectMembers: {
-    id: 1,
-    name: 'Local-Group',
-  },
   clientType: 'local',
   mergeAlgorithm: 'override',
   trees: [],

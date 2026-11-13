@@ -6,8 +6,8 @@ import { FieldTypes } from '../../constants/fieldTypes';
 export const FIELD_TYPE_COLOURS: { [key: string]: string } = {
   string: Theme.SecondaryBlue,
   categorical: Theme.SecondaryPurple,
-  number: Theme.SecondaryYellow,
-  double: Theme.SecondaryOrange,
+  integer: Theme.SecondaryYellow,
+  decimal: Theme.SecondaryOrange,
   boolean: Theme.SecondaryTeal,
   date: Theme.SecondaryLightGreen,
   default: Theme.PrimaryGrey400,
@@ -19,6 +19,6 @@ export const FIELD_TYPE_ICONS: Record<FieldTypes, SvgIconComponent> = {
   [FieldTypes.STRING]: TextFields,
   [FieldTypes.DATE]: CalendarToday,
   [FieldTypes.BOOLEAN]: ToggleOn,
-  [FieldTypes.NUMBER]: Numbers,
-  [FieldTypes.DOUBLE]: Numbers,
+  [FieldTypes.INTEGER]: Numbers,
+  [FieldTypes.DECIMAL]: Numbers,
 };

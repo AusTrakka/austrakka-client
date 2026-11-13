@@ -7,10 +7,6 @@ export interface Project {
   label: string;
   clientType: string;
   description: string;
-  projectMembers: {
-    id: number;
-    name: string;
-  };
   trees: {
     id: number;
     name: string;
@@ -27,7 +23,6 @@ export interface TreeVersion {
   treeId: number;
   treeName: string;
   projectId: number;
-  projectMembersGroupId: number;
   projectName: string;
   completedTime: string;
   wasScheduled: boolean;

@@ -39,7 +39,6 @@ const treeSlice = createSlice({
         treeVersionId: state.nextTreeIndex,
         treeName: name ?? `Tree ${state.nextTreeIndex}`,
         projectId: LOCAL_PROJECT.projectId,
-        projectMembersGroupId: LOCAL_PROJECT.projectMembers.id,
         projectName: LOCAL_PROJECT.name,
         completedTime: now,
         wasScheduled: false,
