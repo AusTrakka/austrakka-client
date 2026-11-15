@@ -222,5 +222,5 @@ enum BrandingDefaultValues {
 }
 
 enum DocsDefaultValues {
-  Url = "https://docs.trakka.org",
+  Url = "https://docs.trakka.org/docs/trakka-scout",
 }

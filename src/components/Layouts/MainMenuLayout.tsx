@@ -11,6 +11,7 @@ import {
   Upload,
 } from '@mui/icons-material';
 import {
+  Alert,
   Box,
   Breadcrumbs,
   Divider,
@@ -237,6 +238,9 @@ function MainMenuLayout() {
         </Drawer>
       </Box>
       <div className={pageStyling}>
+        <Alert severity="warning" sx={{ borderRadius: 0, justifyContent: 'center' }}>
+          Trakka Scout is currently in beta.
+        </Alert>
         <div className="pageHeader">
           <div className="breadcrumbs">
             <Breadcrumbs aria-label="breadcrumb">
