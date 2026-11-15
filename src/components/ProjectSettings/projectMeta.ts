@@ -18,7 +18,6 @@ export function toProjectPut(project: Project): ProjectPut {
     dashboardName: project.dashboardName,
     label: project.label,
     mergeAlgorithm: project.mergeAlgorithm as MergeAlgorithm,
-    clientType: project.clientType,
     status: project.status,
     watermarkTrees: project.watermarkTrees,
   };
