@@ -260,6 +260,7 @@ function LocalUpload() {
                 fields={parsedFields}
                 setFields={setParsedFields}
                 csvData={parsedMetadata}
+                setParseError={setParseError}
               />
             </Grid>
           )}

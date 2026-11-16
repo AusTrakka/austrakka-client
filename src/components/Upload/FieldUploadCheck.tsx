@@ -6,7 +6,11 @@ import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { typesByName } from '../../constants/standaloneClientConstants';
 import type { DeducedField } from '../../types/dtos';
 import type { Sample } from '../../types/sample.interface';
-import { getUniqueValuesArray } from '../../utilities/standaloneClientUtils';
+import {
+  canParseColumnAsDate,
+  canParseColumnAsNumeric,
+  getUniqueValuesArray,
+} from '../../utilities/standaloneClientUtils';
 
 const TYPE_OPTIONS = ['Categorical', 'Numeric', 'Date', 'Geo region (ISO)', 'Free text'];
 
@@ -14,16 +18,30 @@ interface FieldUploadCheckProps {
   fields: DeducedField[];
   setFields: React.Dispatch<React.SetStateAction<DeducedField[]>>;
   csvData: Sample[];
+  setParseError: (error: string | null) => void;
 }
 
 function FieldUploadCheck(props: FieldUploadCheckProps) {
-  const { fields, setFields, csvData } = props;
+  const { fields, setFields, csvData, setParseError } = props;
 
   const onTypeChange = (rowData: DeducedField, newType: string) => {
+    // biome-ignore lint/nursery/useDestructuring: destructuring to the 3rd element is silly
+    const typeCode = typesByName[newType][3];
+
+    if (typeCode === 'Q' && !canParseColumnAsNumeric(csvData, rowData.columnName)) {
+      setParseError(
+        `Field "${rowData.columnName}" contains values that cannot be parsed as Numeric`,
+      );
+      return;
+    }
+    if (typeCode === 'T' && !canParseColumnAsDate(csvData, rowData.columnName)) {
+      setParseError(`Field "${rowData.columnName}" contains values that cannot be parsed as Date`);
+      return;
+    }
+    setParseError(null);
+
     setFields((prev) => {
       if (!prev) return prev;
-      // biome-ignore lint/nursery/useDestructuring: destructuring to the 3rd element is silly
-      const typeCode = typesByName[newType][3];
       const metaDataColumnValidValues =
         typeCode === 'N' || typeCode === 'G'
           ? getUniqueValuesArray(csvData, rowData.columnName)

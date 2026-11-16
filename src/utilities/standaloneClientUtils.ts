@@ -140,3 +140,32 @@ export function getUniqueValuesArray(data: Sample[], fieldName: string): string[
   });
   return Array.from(uniqueValues).sort();
 }
+
+// Returns false if any non-empty value in the column cannot be parsed as a number
+export function canParseColumnAsNumeric(data: Sample[], fieldName: string): boolean {
+  for (let i = 0; i < data.length; i++) {
+    const value = data[i][fieldName];
+    if (value === null || value === undefined || value === '') {
+      continue; // skip null/undefined/empty values
+    }
+    if (Number.isNaN(Number(value))) {
+      return false;
+    }
+  }
+  return true;
+}
+
+// Returns false if any non-empty value in the column cannot be parsed as a date
+export function canParseColumnAsDate(data: Sample[], fieldName: string): boolean {
+  for (let i = 0; i < data.length; i++) {
+    const value = data[i][fieldName];
+    if (value === null || value === undefined || value === '') {
+      continue; // skip null/undefined/empty values
+    }
+    // TODO check, risky if American dates? (mirrors deduceFieldType)
+    if (Number.isNaN(Date.parse(value))) {
+      return false;
+    }
+  }
+  return true;
+}
