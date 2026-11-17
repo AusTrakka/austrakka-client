@@ -186,8 +186,8 @@ function DataFilters(props: DataFiltersProps) {
         fieldType = FieldTypes.DATE;
         defaultCondition = FilterMatchMode.DATE_IS;
       } else if (
-        targetFieldProps?.primitiveType === FieldTypes.NUMBER ||
-        targetFieldProps?.primitiveType === FieldTypes.DOUBLE
+        targetFieldProps?.primitiveType === FieldTypes.INTEGER ||
+        targetFieldProps?.primitiveType === FieldTypes.DECIMAL
       ) {
         setConditions(numberConditions);
         fieldType = targetFieldProps.primitiveType;
@@ -336,8 +336,8 @@ function DataFilters(props: DataFiltersProps) {
         variant="outlined"
         name="value"
         type={
-          filterFormValues.fieldType === FieldTypes.NUMBER ||
-          filterFormValues.fieldType === FieldTypes.DOUBLE
+          filterFormValues.fieldType === FieldTypes.INTEGER ||
+          filterFormValues.fieldType === FieldTypes.DECIMAL
             ? 'number'
             : undefined
         }
@@ -347,8 +347,8 @@ function DataFilters(props: DataFiltersProps) {
         }}
         size="small"
         inputProps={
-          filterFormValues.fieldType === FieldTypes.NUMBER ||
-          filterFormValues.fieldType === FieldTypes.DOUBLE
+          filterFormValues.fieldType === FieldTypes.INTEGER ||
+          filterFormValues.fieldType === FieldTypes.DECIMAL
             ? { step: 'any' }
             : { maxLength: 25 }
         }
@@ -547,7 +547,7 @@ function DataFilters(props: DataFiltersProps) {
     let newConditions = stringConditions;
     if (fieldType === FieldTypes.DATE) {
       newConditions = dateConditions;
-    } else if (fieldType === FieldTypes.NUMBER || fieldType === FieldTypes.DOUBLE) {
+    } else if (fieldType === FieldTypes.INTEGER || fieldType === FieldTypes.DECIMAL) {
       newConditions = numberConditions;
     } else if (fieldType === FieldTypes.BOOLEAN) {
       newConditions = booleanConditions;

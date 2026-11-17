@@ -36,6 +36,7 @@ const rowBoxSx = {
 
 interface SortableFieldListProps {
   title?: string;
+  description?: string;
   fields: Field[];
   selectedFieldNames: string[];
   onChange: (nextSelectedFieldNames: string[]) => void;
@@ -135,6 +136,7 @@ function SortableFieldRow({
 
 export function SortableFieldList({
   title,
+  description,
   fields,
   selectedFieldNames,
   onChange,
@@ -155,8 +157,13 @@ export function SortableFieldList({
   return (
     <Box>
       {title && (
-        <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 'bold' }}>
+        <Typography variant="subtitle2" sx={{ mb: description ? 0 : 1.5, fontWeight: 'bold' }}>
           {title}
+        </Typography>
+      )}
+      {description && (
+        <Typography variant="body2" sx={{ mb: 1.5 }}>
+          {description}
         </Typography>
       )}
       <Autocomplete

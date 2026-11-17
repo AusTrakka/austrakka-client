@@ -1,5 +1,5 @@
-import { RestartAlt, Tune } from '@mui/icons-material';
-import { Box, Button, Typography } from '@mui/material';
+import { HelpOutline, RestartAlt, Tune } from '@mui/icons-material';
+import { Box, Button, Chip, Typography } from '@mui/material';
 import {
   type Dispatch,
   type KeyboardEvent,
@@ -9,6 +9,7 @@ import {
 } from 'react';
 import { Theme } from '../../../assets/themes/theme';
 import type { MetaDataColumn, ProjectViewField } from '../../../types/dtos';
+import { DOCS_URL } from '../../DataSummaries/dataSummariesMeta';
 import {
   type AggregationType,
   FIELD_TYPE_AGGREGATION_TYPES,
@@ -128,14 +129,47 @@ function TableConfig(props: TableConfigProps) {
       }}
     >
       <Box>
-        <Tune fontSize="large" color="primary" />
-        <Typography variant="h4" color="primary" sx={{ mb: 1.5 }}>
-          Table configuration
-        </Typography>
-        <GlobalOptions pivotConfig={pivotConfig} setPivotConfig={setPivotConfig} />
-        <Box sx={{ my: 2 }}>
+        <Box sx={{ flexDirection: 'row', display: 'flex', justifyContent: 'space-between' }}>
+          <Box>
+            <Tune fontSize="large" color="primary" />
+            <Typography variant="h4" color="primary" sx={{ mb: 2 }}>
+              Table configuration
+            </Typography>
+          </Box>
+          <Box>
+            <Chip
+              icon={<HelpOutline />}
+              label="Help"
+              onClick={() =>
+                window.open(`${import.meta.env.VITE_DOCS_URL}${DOCS_URL}`, '_blank')?.focus()
+              }
+            />
+          </Box>
+        </Box>
+        <Box>
           <SortableFieldList
-            title="Display fields"
+            title="Group-by fields"
+            description="Select fields to group the table by"
+            fields={sortedFields}
+            selectedFieldNames={pivotConfig.groupByFields}
+            onChange={handleGroupByChange}
+            onOpenItemMenu={openGroupByFieldMenu}
+            unavailableFields={UNAVAILABLE_FIELDS}
+          />
+          <GroupByFieldMenu
+            setPivotConfig={setPivotConfig}
+            anchorEl={groupByAnchorEl}
+            activeCol={activeGroupByCol}
+            fieldType={activeGroupByCol ? fieldTypes[activeGroupByCol] : undefined}
+            pivotConfig={pivotConfig}
+            rows={rows}
+            onClose={() => setGroupByAnchorEl(null)}
+          />
+        </Box>
+        <Box sx={{ my: 3 }}>
+          <SortableFieldList
+            title="Aggregation fields"
+            description="Select fields to aggregate on in the table"
             fields={sortedFields}
             selectedFieldNames={pivotConfig.displayFields}
             onChange={handleDisplayFieldsChange}
@@ -153,25 +187,7 @@ function TableConfig(props: TableConfigProps) {
             setPivotConfig={setPivotConfig}
           />
         </Box>
-        <Box>
-          <SortableFieldList
-            title="Group-by fields"
-            fields={sortedFields}
-            selectedFieldNames={pivotConfig.groupByFields}
-            onChange={handleGroupByChange}
-            onOpenItemMenu={openGroupByFieldMenu}
-            unavailableFields={UNAVAILABLE_FIELDS}
-          />
-          <GroupByFieldMenu
-            setPivotConfig={setPivotConfig}
-            anchorEl={groupByAnchorEl}
-            activeCol={activeGroupByCol}
-            fieldType={activeGroupByCol ? fieldTypes[activeGroupByCol] : undefined}
-            pivotConfig={pivotConfig}
-            rows={rows}
-            onClose={() => setGroupByAnchorEl(null)}
-          />
-        </Box>
+        <GlobalOptions pivotConfig={pivotConfig} setPivotConfig={setPivotConfig} />
       </Box>
       <Box sx={{ mt: 'auto', mb: 1, display: 'flex', justifyContent: 'flex-start' }}>
         <Button

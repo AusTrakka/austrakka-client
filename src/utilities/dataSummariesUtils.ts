@@ -104,7 +104,7 @@ function sortGroupKeys(a: string, b: string, fieldType: FieldTypes): number {
   if (a === BLANK_GROUP_VALUE) return 1;
   if (b === BLANK_GROUP_VALUE) return -1;
 
-  if (fieldType === FieldTypes.NUMBER || fieldType === FieldTypes.DOUBLE) {
+  if (fieldType === FieldTypes.INTEGER || fieldType === FieldTypes.DECIMAL) {
     const na = Number.parseFloat(a);
     const nb = Number.parseFloat(b);
 
@@ -223,7 +223,7 @@ function resolveGroupValueForNode(
     const granularity = groupByGranularity[col] ?? DateGranularity.Month;
     bucketLabel = bucketDateValue(rawValue, granularity);
   } else if (
-    (fieldType === FieldTypes.NUMBER || fieldType === FieldTypes.DOUBLE) &&
+    (fieldType === FieldTypes.INTEGER || fieldType === FieldTypes.DECIMAL) &&
     groupByBinSize[col] !== undefined
   ) {
     bucketLabel = bucketNumberValue(rawValue, groupByBinSize[col]!);

@@ -1,8 +1,18 @@
-import { Typography } from '@mui/material';
+import { Link, Typography } from '@mui/material';
 
 export default function UploadMetadataHelp() {
   return (
     <>
+      <Typography variant="body1" color="textPrimary" paddingBottom={2}>
+        Full documentation on metadata upload can be found{' '}
+        <Link
+          href="https://docs.trakka.org/docs/Web-Interface/Uploads/metadata-uploads"
+          target="_blank"
+        >
+          here
+        </Link>
+        .
+      </Typography>
       <Typography>Please use the supplied proforma to submit metadata for samples.</Typography>
       <br />
       Metadata can be submitted in tabular format, either in CSV or Excel (xlsx) format. Files

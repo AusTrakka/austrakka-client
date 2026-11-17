@@ -144,6 +144,8 @@ function HasSeq({
     };
   }, [filteredData, categoryFieldStable]);
 
+  const hasMissing = useMemo(() => missingCounts.some((count) => count > 0), [missingCounts]);
+
   const chartHeight = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, categories.length * ROW_HEIGHT));
 
   const handleClick = useCallback(
@@ -238,7 +240,7 @@ function HasSeq({
         itemHeight: 10,
         data: ['Available', 'Missing'],
         selected: {
-          Available: false,
+          Available: !hasMissing,
           Missing: true,
         },
       },
@@ -294,7 +296,15 @@ function HasSeq({
     };
 
     chart.setOption(option, true);
-  }, [categories, availableCounts, missingCounts, axisTitleStable, errorMessage, handleClick]);
+  }, [
+    categories,
+    availableCounts,
+    missingCounts,
+    hasMissing,
+    axisTitleStable,
+    errorMessage,
+    handleClick,
+  ]);
 
   // Keep chart responsive
   useEffect(() => {

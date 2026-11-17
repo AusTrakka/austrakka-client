@@ -87,7 +87,7 @@ export function replaceIntStrings(data: Sample[], fields: Field[], fieldNames: s
   const fieldDetails = getFieldDetails(fieldNames, fields);
   const intFields = fieldDetails.filter(
     (field) =>
-      field.primitiveType === FieldTypes.NUMBER || field.primitiveType === FieldTypes.DOUBLE,
+      field.primitiveType === FieldTypes.INTEGER || field.primitiveType === FieldTypes.DECIMAL,
   );
   intFields.forEach((field) => {
     data.forEach((sample) => {
@@ -105,7 +105,7 @@ export function replaceIntStrings(data: Sample[], fields: Field[], fieldNames: s
 // Given sample data and field details, replace date strings with Date objects
 export function replaceDateStrings(data: Sample[], fields: Field[], fieldNames: string[]) {
   const fieldDetails = getFieldDetails(fieldNames, fields);
-  const dateFields = fieldDetails.filter((field) => field.primitiveType === 'date');
+  const dateFields = fieldDetails.filter((field) => field.primitiveType === FieldTypes.DATE);
   dateFields.forEach((field) => {
     data.forEach((sample) => {
       const dateString = sample[field.columnName];
@@ -152,7 +152,8 @@ export function calculateUniqueValues(
   // we calculate unique values for both visualisable categorical and string fields
   // this means we are ignoring validValues; values won't be in legends if not in data
   const visualisableFields = fieldDetails.filter(
-    (field) => field.canVisualise && (!field.primitiveType || field.primitiveType === 'string'),
+    (field) =>
+      field.canVisualise && (!field.primitiveType || field.primitiveType === FieldTypes.STRING),
   );
 
   const valueSets: Record<string, Set<string>> = {};

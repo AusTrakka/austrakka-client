@@ -1,6 +1,8 @@
 import type { Field } from '../../../types/dtos';
 
 export const EVENT_NAME_COLUMN: string = 'eventType';
+export const EVENT_STATUS_COLUMN: string = 'eventStatus';
+
 export const supportedColumns: Field[] = [
   {
     columnName: EVENT_NAME_COLUMN,
@@ -9,6 +11,16 @@ export const supportedColumns: Field[] = [
     metaDataColumnTypeName: 'string',
     primitiveType: 'string',
     columnOrder: 1,
+    canVisualise: false,
+    geoField: false,
+  },
+  {
+    columnName: EVENT_STATUS_COLUMN,
+    headerName: 'Status',
+    metaDataColumnValidValues: null,
+    metaDataColumnTypeName: 'string',
+    primitiveType: 'string',
+    columnOrder: 2,
     canVisualise: false,
     geoField: false,
   },

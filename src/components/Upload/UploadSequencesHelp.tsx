@@ -1,4 +1,4 @@
-import { Box, Typography } from '@mui/material';
+import { Box, Link, Typography } from '@mui/material';
 import type React from 'react';
 
 // can be used elsewhere or maybe I should put this in the Theme file.
@@ -26,18 +26,28 @@ export default function UploadSequencesHelp() {
   return (
     <>
       <Typography variant="body1" color="textPrimary" paddingBottom={2}>
+        Full documentation on sequence upload can be found{' '}
+        <Link
+          href="https://docs.trakka.org/docs/Web-Interface/Uploads/sequence-uploads"
+          target="_blank"
+        >
+          here
+        </Link>
+        .
+      </Typography>
+
+      <Typography variant="body1" color="textPrimary" paddingBottom={2}>
         Drag and drop your sequence files into the upload box, or click to select them.{' '}
-        {/** will need to see how to link to docs page depending on the env* */}
       </Typography>
 
       <Typography variant="h4" color="textPrimary" paddingBottom={2}>
         File types
       </Typography>
       <Typography variant="body1" color="textPrimary" paddingBottom={1}>
-        <strong>FASTQ and FASTA assembly files.</strong> {import.meta.env.VITE_BRANDING_NAME} will
-        try to read the <InlineCode>Seq_ID</InlineCode> from each filename, using everything before
-        the first underscore (_). It will also try to pair files into read pairs (R1 and R2)
-        automatically. You can review and edit these assignments before submitting.
+        <strong>FASTQ files and FASTA assembly files.</strong> {import.meta.env.VITE_BRANDING_NAME}{' '}
+        will try to parse the filename for the Seq_ID and, for paired-end files, the read number.
+        You can review and edit these Seq_ID assignments before submitting. If you provide a CSV
+        file specifying expected filenames for each Seq_ID, this will override any filename parsing.
       </Typography>
       <Typography variant="body1" color="textPrimary" paddingBottom={2}>
         <strong>Consensus FASTA files.</strong> You can include multiple samples in a single file.

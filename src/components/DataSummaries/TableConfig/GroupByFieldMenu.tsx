@@ -454,7 +454,7 @@ export function GroupByFieldMenu({
         />
       )}
 
-      {(fieldType === FieldTypes.NUMBER || fieldType === FieldTypes.DOUBLE) && (
+      {(fieldType === FieldTypes.INTEGER || fieldType === FieldTypes.DECIMAL) && (
         <NumberBinningOptions
           activeCol={activeCol!}
           pivotConfig={pivotConfig}

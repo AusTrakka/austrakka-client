@@ -7,6 +7,7 @@ import {
   selectProjectMetadataFields,
 } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
+import { FieldTypes } from '../../../constants/fieldTypes';
 import { hasCompleteData } from '../../../constants/metadataLoadingState';
 import { defaultDiscreteColorScheme } from '../../../constants/schemes';
 import type { ProjectViewField } from '../../../types/dtos';
@@ -120,13 +121,14 @@ function EpiCurve(props: PlotTypeProps) {
     if (fields && fields.length > 0) {
       const localCatFields: ProjectViewField[] = fields.filter(
         (field) =>
-          field.canVisualise && (field.primitiveType === 'string' || field.primitiveType === null),
+          field.canVisualise &&
+          (field.primitiveType === FieldTypes.STRING || field.primitiveType === null),
       );
       setCategoricalFields(localCatFields.map((field) => field.columnName));
       // Note we do not set a preferred starting colour field; starting value is None
       // Similarly starting value for row facet is None
       const localDateFields: ProjectViewField[] = fields.filter(
-        (field) => field.primitiveType === 'date',
+        (field) => field.primitiveType === FieldTypes.DATE,
       );
       setDateFields(localDateFields.map((field) => field.columnName));
       // Mandatory fields: one date field

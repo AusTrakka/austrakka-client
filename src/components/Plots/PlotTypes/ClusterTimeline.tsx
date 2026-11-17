@@ -4,6 +4,7 @@ import type { ColorScheme } from 'vega';
 import type { TopLevelSpec } from 'vega-lite';
 import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
+import { FieldTypes } from '../../../constants/fieldTypes';
 import { SAMPLE_ID_FIELD } from '../../../constants/metadataConsts';
 import { defaultDiscreteColorScheme } from '../../../constants/schemes';
 import type { ProjectViewField } from '../../../types/dtos';
@@ -123,11 +124,12 @@ function ClusterTimeline(props: PlotTypeProps) {
       // For now this selection need only depend on canVisualise
       const localCatFields: ProjectViewField[] = fields.filter(
         (field) =>
-          field.canVisualise && (field.primitiveType === 'string' || field.primitiveType === null),
+          field.canVisualise &&
+          (field.primitiveType === FieldTypes.STRING || field.primitiveType === null),
       );
       setCategoricalFields(localCatFields.map((field) => field.columnName));
       const localDateFields: ProjectViewField[] = fields.filter(
-        (field) => field.primitiveType === 'date',
+        (field) => field.primitiveType === FieldTypes.DATE,
       );
       setDateFields(localDateFields.map((field) => field.columnName));
       // Mandatory fields: one categorical field

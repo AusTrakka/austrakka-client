@@ -19,8 +19,7 @@ export function ShareBlocked(props: ShareBlockedProps) {
           Incorrect permissions
         </Typography>
         <Typography variant="body1">
-          Only users with <strong>Uploader</strong> permissions for the organisation&apos;s Owner
-          group can share samples.
+          You do not have the correct permissions to manage sample sharing.
         </Typography>
       </>
     );

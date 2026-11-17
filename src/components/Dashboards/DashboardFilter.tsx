@@ -19,6 +19,7 @@ import type { DataTableFilterMeta } from 'primereact/datatable';
 import { useEffect, useMemo, useState } from 'react';
 import type { ProjectMetadataState } from '../../app/projectMetadataSlice';
 import { DashboardTimeFilter } from '../../constants/dashboardTimeFilter';
+import { FieldTypes } from '../../constants/fieldTypes';
 import { hasCompleteData } from '../../constants/metadataLoadingState';
 import type { Sample } from '../../types/sample.interface';
 
@@ -98,7 +99,7 @@ function DashboardFilter(props: DashboardFilterProps) {
   const projectDateFields = useMemo(() => {
     if (!hasCompleteData(data?.loadingState) || !data?.fields) return [];
     return data.fields
-      .filter((field) => field.primitiveType === 'date')
+      .filter((field) => field.primitiveType === FieldTypes.DATE)
       .map((field) => field.projectFieldName);
   }, [data]);
 

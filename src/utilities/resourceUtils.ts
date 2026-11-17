@@ -256,6 +256,9 @@ export const unshareSamples = (
     clientSessionId,
   );
 
+export const disableSamples = (token: string, samples: string[], clientSessionId?: string) =>
+  callPATCH('/api/Sample/Disable', token, { seqIds: samples }, clientSessionId);
+
 // Organisation endpoints
 export const getOrganisations = (
   includeAll: boolean,
