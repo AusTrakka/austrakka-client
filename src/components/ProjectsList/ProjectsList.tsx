@@ -78,12 +78,8 @@ function ProjectsList() {
     async function getProjects() {
       const projectResponse: ResponseObject<Project[]> = await getProjectList(token);
       if (projectResponse.status === ResponseType.Success) {
-        const filteredProjects = projectResponse.data?.filter(
-          ({ clientType }) => !clientType || clientType === import.meta.env.VITE_BRANDING_ID,
-        );
-
         const projectsWithSort =
-          filteredProjects?.map((project) => ({
+          projectResponse.data?.map((project) => ({
             ...project,
             statusSortOrder: statusSortOrder[project.status as ProjectStatus] ?? 0,
           })) ?? [];
