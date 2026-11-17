@@ -1,26 +1,16 @@
-import { FileUpload } from '@mui/icons-material';
-import {
-  Alert,
-  Backdrop,
-  Button,
-  CircularProgress,
-  OutlinedInput,
-  Typography,
-} from '@mui/material';
+import { Close, FileUpload } from '@mui/icons-material';
+import { Alert, Box, Button, IconButton, OutlinedInput, Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import Papa from 'papaparse';
-import { useEffect, useRef, useState } from 'react';
-import { addMetadata } from '../../app/projectMetadataSlice';
+import { useEffect, useState } from 'react';
+import { addMetadata, clearMetadata, selectMetadataFilename } from '../../app/projectMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
-import { addTree, selectNextTreeIndex } from '../../app/treeSlice';
-import LoadingState from '../../constants/loadingState';
-import { ResponseType } from '../../constants/responseType';
-import type { ResponseMessage } from '../../types/apiResponse.interface';
+import { addTree, deleteTree, selectNextTreeIndex, selectTrees } from '../../app/treeSlice';
+import { LOCAL_PROJECT } from '../../constants/standaloneClientConstants';
 import type { DropFileUpload } from '../../types/DropFileUpload';
 import type { DeducedField } from '../../types/dtos';
 import type { Sample } from '../../types/sample.interface';
 import { buildFieldListAndUpdateData } from '../../utilities/standaloneClientUtils';
-import { Validation } from '../Validation/Validation';
 import FieldUploadCheck from './FieldUploadCheck';
 import FileDragDrop from './FileDragDrop';
 
@@ -41,19 +31,18 @@ const validFormats = { ...METADATA_FORMATS, ...TREE_FORMATS };
 
 function LocalUpload() {
   const dispatch = useAppDispatch();
-  const [submission, setSubmission] = useState({
-    status: LoadingState.IDLE,
-    messages: [] as ResponseMessage[] | undefined,
-  });
   const [files, setFiles] = useState<DropFileUpload[]>([]);
   const [showFieldsTable, setShowFieldsTable] = useState(false);
   const [parsedMetadata, setParsedMetadata] = useState<Sample[]>([]);
   const [parsedFields, setParsedFields] = useState<DeducedField[]>([]);
   const [parseError, setParseError] = useState<string | null>(null);
   const [newTreeName, setNewTreeName] = useState<string | null>(null);
-  const scrollRef = useRef<null | HTMLDivElement>(null);
 
+  const currentCsvFilename: string | null = useAppSelector((state) =>
+    selectMetadataFilename(state, LOCAL_PROJECT.abbreviation),
+  );
   const nextTreeIndex = useAppSelector((state) => selectNextTreeIndex(state));
+  const trees = useAppSelector((state) => selectTrees(state));
 
   // TODO is there a better syntax for contains?
   const metadataFilePending =
@@ -93,13 +82,6 @@ function LocalUpload() {
       </Button>
     );
   };
-
-  useEffect(() => {
-    // Scroll validation or upload response messages into view
-    if (submission.messages?.length !== 0) {
-      scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [submission.messages]);
 
   // When metadata file added, show and update fields table
   // When metadata file removed, hide fields table
@@ -162,20 +144,11 @@ function LocalUpload() {
       addMetadata({
         uploadedData: parsedMetadata,
         uploadedFields: parsedFields,
+        filename: files[0].file.name,
       }),
     );
-
     // TODO is there a failure case here? handle ingestion errors resulting from e.g. wrong field types
-    setSubmission((oldSubmissionState) => ({
-      ...oldSubmissionState,
-      status: LoadingState.SUCCESS, // TODO how to actually ensure success? check project state?
-      messages: [
-        {
-          ResponseType: ResponseType.Success,
-          ResponseMessage: 'Data loaded',
-        },
-      ],
-    }));
+
     setFiles([]);
   };
 
@@ -190,19 +163,62 @@ function LocalUpload() {
           newickTree: newickString,
         }),
       );
-      setSubmission((oldSubmissionState) => ({
-        ...oldSubmissionState,
-        status: LoadingState.SUCCESS, // TODO how to actually ensure success? check tree state?
-        messages: [
-          {
-            ResponseType: ResponseType.Success,
-            ResponseMessage: 'Tree loaded',
-          },
-        ],
-      }));
     };
     setFiles([]);
   };
+
+  const handleClearMetadata = () => {
+    dispatch(clearMetadata());
+  };
+
+  const handleDeleteTree = (treeId: number) => {
+    dispatch(deleteTree(treeId));
+  };
+
+  const renderDataSummary = () => (
+    <Box
+      sx={{
+        border: '1px solid',
+        borderColor: 'divider',
+        borderRadius: 1,
+        padding: 2,
+      }}
+    >
+      <Stack spacing={1}>
+        <Stack direction="row" alignItems="center" justifyContent="space-between">
+          <Typography variant={'body1'}>Metadata: {currentCsvFilename ?? 'None'}</Typography>
+          <Button
+            size="small"
+            variant="outlined"
+            disabled={!currentCsvFilename}
+            onClick={handleClearMetadata}
+          >
+            Clear
+          </Button>
+        </Stack>
+        <Typography variant={'body1'}>Trees: {trees.length === 0 && 'None'}</Typography>
+        {trees.length > 0 &&
+          trees.map((tree) => (
+            <Stack
+              key={tree.treeId}
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+              sx={{ pl: 1 }}
+            >
+              <Typography variant={'body2'}>{tree.treeName}</Typography>
+              <IconButton
+                size="small"
+                aria-label={`Delete ${tree.treeName}`}
+                onClick={() => handleDeleteTree(tree.treeId)}
+              >
+                <Close fontSize="small" />
+              </IconButton>
+            </Stack>
+          ))}
+      </Stack>
+    </Box>
+  );
 
   return (
     <>
@@ -267,7 +283,7 @@ function LocalUpload() {
           {treeFilePending && (
             <Grid size={12} container alignItems="center" spacing={1}>
               <Grid>
-                <Typography>Tree name:</Typography>
+                <Typography>New tree:</Typography>
               </Grid>
               <Grid>
                 <OutlinedInput
@@ -281,30 +297,9 @@ function LocalUpload() {
               </Grid>
             </Grid>
           )}
+          <Grid size={12}>{renderDataSummary()}</Grid>
         </Grid>
       </Grid>
-
-      <div ref={scrollRef}>
-        {submission.status === LoadingState.SUCCESS || submission.status === LoadingState.ERROR ? (
-          <Validation messages={submission.messages ?? []} title={'Upload status'} showTitle />
-        ) : null}
-      </div>
-      <Backdrop
-        sx={{
-          color: 'var(--background-colour)',
-          zIndex: (theme) => theme.zIndex.drawer + 1,
-        }}
-        open={submission.status === LoadingState.LOADING}
-      >
-        <Grid container spacing={2} direction="column" alignItems="center" justifyContent="center">
-          <Grid>
-            <Typography>{'Adding metadata... '}</Typography>
-          </Grid>
-          <Grid>
-            <CircularProgress color="inherit" />
-          </Grid>
-        </Grid>
-      </Backdrop>
     </>
   );
 }

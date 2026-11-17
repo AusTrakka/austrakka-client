@@ -32,6 +32,7 @@ export interface ProjectMetadataState {
   errorMessage: string | null;
   isDataStale: boolean;
   watermarkTrees: boolean;
+  csvFilename: string | null;
 }
 
 const projectMetadataInitialStateCreator = (projectAbbrev: string): ProjectMetadataState => ({
@@ -49,6 +50,7 @@ const projectMetadataInitialStateCreator = (projectAbbrev: string): ProjectMetad
   errorMessage: null,
   isDataStale: false,
   watermarkTrees: false,
+  csvFilename: null,
 });
 
 interface ProjectMetadataSliceState {
@@ -64,6 +66,7 @@ const initialState: ProjectMetadataSliceState = {
 interface AddMetadataParams {
   uploadedData: Sample[];
   uploadedFields: Field[];
+  filename: string;
 }
 
 const fieldToProjectField = (field: Field, idx: number): ProjectField => ({
@@ -89,7 +92,7 @@ export const projectMetadataSlice = createSlice({
   initialState,
   reducers: {
     addMetadata: (state, action: PayloadAction<AddMetadataParams>) => {
-      const { uploadedData, uploadedFields } = action.payload;
+      const { uploadedData, uploadedFields, filename } = action.payload;
 
       // If updating existing metadata, should use existing state to return modified
       // for now just replace data
@@ -102,6 +105,7 @@ export const projectMetadataSlice = createSlice({
 
       const fieldNames = uploadedFields.map((field) => field.columnName);
 
+      metadataState.csvFilename = filename;
       metadataState.projectFields = uploadedFields.map(fieldToProjectField);
       metadataState.fields = uploadedFields.map(fieldToProjectViewField);
       metadataState.view = {
@@ -156,13 +160,17 @@ export const projectMetadataSlice = createSlice({
       //     collator.compare(a[SAMPLE_ID_FIELD], b[SAMPLE_ID_FIELD]));
       // }
     },
+    clearMetadata: (state, action: PayloadAction<string | undefined>) => {
+      const projectAbbrev = action.payload ?? localProjectAbbrev;
+      state.data[projectAbbrev] = projectMetadataInitialStateCreator(projectAbbrev);
+    },
   },
 });
 
 // reducer
 export default projectMetadataSlice.reducer;
 
-export const { addMetadata } = projectMetadataSlice.actions;
+export const { addMetadata, clearMetadata } = projectMetadataSlice.actions;
 
 // selectors
 
@@ -210,4 +218,12 @@ export const selectAwaitingProjectMetadata = (
     loadingState === MetadataLoadingState.FIELDS_LOADED ||
     loadingState === MetadataLoadingState.AWAITING_DATA
   );
+};
+
+export const selectMetadataFilename = (
+  state: RootState,
+  projectAbbrev: string | undefined,
+): string | null => {
+  if (!projectAbbrev) return null;
+  return state.projectMetadataState.data[projectAbbrev]?.csvFilename;
 };

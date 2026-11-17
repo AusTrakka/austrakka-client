@@ -54,12 +54,16 @@ const treeSlice = createSlice({
       state.nextTreeIndex += 1;
       state.trees.push(newTreeVersion);
     },
+    deleteTree: (state, action: PayloadAction<number>) => {
+      const treeId = action.payload;
+      state.trees = state.trees.filter((tree) => tree.treeId !== treeId);
+    },
   },
 });
 
 export default treeSlice.reducer;
 
-export const { addTree } = treeSlice.actions;
+export const { addTree, deleteTree } = treeSlice.actions;
 
 export const selectTrees = (state: RootState): TreeVersion[] => state.treeState.trees;
 
