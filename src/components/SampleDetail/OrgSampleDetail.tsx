@@ -42,7 +42,7 @@ function SampleDetail() {
   };
 
   useEffect(() => {
-    const updateProject = async () => {
+    const updateOrg = async () => {
       try {
         const sampleResponse: ResponseObject = await getSampleProperties(seqId!, token);
         if (sampleResponse.status === ResponseType.Success) {
@@ -58,7 +58,7 @@ function SampleDetail() {
         }
       } catch (error) {
         // biome-ignore lint/suspicious/noConsole: historic
-        console.error('Error updating project:', error);
+        console.error('Error updating sample owner organisation:', error);
       }
     };
 
@@ -67,7 +67,7 @@ function SampleDetail() {
       tokenLoading !== LoadingState.LOADING &&
       tokenLoading !== LoadingState.IDLE
     ) {
-      updateProject();
+      updateOrg();
     }
   }, [token, seqId, orgAbbrev, tokenLoading]);
 
