@@ -3,13 +3,14 @@ import type { MapSupportInfo } from '../components/Maps/mapMeta';
 import { MergeAlgorithm } from '../constants/mergeAlgorithm';
 import { HAS_SEQUENCES, SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 import MetadataLoadingState from '../constants/metadataLoadingState';
-import type { ProjectField, ProjectView, ProjectViewField } from '../types/dtos';
+import type { DataSetEntry, ProjectField, ProjectViewField } from '../types/dtos';
+import type { ResponseObject } from '../types/responseObject.interface';
 import type { Sample } from '../types/sample.interface';
 import {
+  getDatasets,
   getLatestActivityTime,
   getProjectDetails,
   getProjectFields,
-  getProjectView,
   getProjectViewData,
 } from '../utilities/resourceUtils';
 import { listenerMiddleware } from './listenerMiddleware';
@@ -38,7 +39,7 @@ export interface ProjectMetadataState {
   // columnName is likely always identical to fieldName. Might need to collapse.
   fields: ProjectViewField[] | null;
   fieldUniqueValues: Record<string, string[] | null> | null;
-  view: ProjectView | null;
+  view: DataSetEntry | null;
   metadata: Sample[] | null;
   emptyColumns: string[];
   errorMessage: string | null;
@@ -86,7 +87,7 @@ interface FetchProjectInfoParams {
 interface FetchProjectInfoResponse {
   mergeAlgorithm: string;
   fields: ProjectField[];
-  view: ProjectView;
+  view: DataSetEntry;
   watermarkTrees: boolean;
 }
 
@@ -144,12 +145,11 @@ const fetchProjectInfo = createAsyncThunk(
       return rejectWithValue(fieldsResponse.error);
     }
 
-    const viewsResponse = await getProjectView(projectAbbrev, token!);
+    const viewsResponse = (await getDatasets(projectAbbrev, token!)) as ResponseObject<
+      DataSetEntry[]
+    >;
     if (viewsResponse.status !== 'Success') {
       return rejectWithValue(viewsResponse.error);
-    }
-    if (!viewsResponse.data) {
-      return rejectWithValue(`No project views found for ${projectAbbrev}`);
     }
 
     const projectSettingsResponse = await getProjectDetails(projectAbbrev, token!);
@@ -157,10 +157,18 @@ const fetchProjectInfo = createAsyncThunk(
       return rejectWithValue(projectSettingsResponse.error);
     }
 
+    const projectFields = fieldsResponse.data as ProjectField[];
+    const view =
+      viewsResponse.data !== undefined && viewsResponse.data.length > 0
+        ? viewsResponse.data[0]
+        : ({
+            viewFields: projectFields.map((x) => x.fieldName),
+            fields: projectFields.map((x) => x.fieldName),
+          } as DataSetEntry);
     return fulfillWithValue<FetchProjectInfoResponse>({
       mergeAlgorithm: projectSettingsResponse.data!.mergeAlgorithm,
-      fields: fieldsResponse.data as ProjectField[],
-      view: viewsResponse.data,
+      fields: projectFields,
+      view: view,
       watermarkTrees: projectSettingsResponse.data!.watermarkTrees,
     });
   },
@@ -176,10 +184,9 @@ const fetchDataView = createAsyncThunk(
     const state = getState() as RootState;
     const { token } = state.projectMetadataState;
     const response = await getProjectViewData(projectAbbrev, token!);
-    if (response.ok) {
+    if (response.status === 'Success' && response.data !== undefined) {
       try {
-        const data: Sample[] = await response.json();
-        return fulfillWithValue<FetchDataViewResponse>({ data });
+        return fulfillWithValue<FetchDataViewResponse>({ data: response.data });
       } catch (_e) {
         return rejectWithValue('An error occurred parsing project metadata');
       }
