@@ -368,7 +368,7 @@ export interface Organisation {
 
 export interface DataSetEntry {
   entryId: number;
-  dataSetId: number;
+  datasetId: number;
   createdBy: string;
   uploadedDate: Date;
   fields: string[];

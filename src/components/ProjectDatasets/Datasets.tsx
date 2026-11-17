@@ -68,9 +68,9 @@ function Datasets(props: DatasetProps) {
   ]);
   const user: UserSliceState = useAppSelector(selectUserState);
 
-  const renderDeleteButton = (rowData: any, handleDeleteRow: (id: number) => void) => (
+  const renderDeleteButton = (rowData: DataSetEntry, handleDeleteRow: (id: number) => void) => (
     <IconButton
-      onClick={() => handleDeleteRow(rowData.dataSetId)}
+      onClick={() => handleDeleteRow(rowData.datasetId)}
       sx={{ color: 'gray' }}
       size="small"
     >
@@ -109,7 +109,7 @@ function Datasets(props: DatasetProps) {
       if (response.status !== ResponseType.Success) {
         throw new Error('Failed to disable dataset');
       }
-      const updatedData = rows.filter((entry) => entry.dataSetId !== dataSetIdToDelete);
+      const updatedData = rows.filter((entry) => entry.datasetId !== dataSetIdToDelete);
       setRows(updatedData);
       setOpenSnackbar(true); // Open toast on success
     } catch (error) {
@@ -222,7 +222,7 @@ function Datasets(props: DatasetProps) {
           {canDelete() ? (
             <Column
               header="Delete"
-              body={(rowData: any) => renderDeleteButton(rowData, handleDeleteRow)}
+              body={(rowData: DataSetEntry) => renderDeleteButton(rowData, handleDeleteRow)}
               style={{ width: '3rem' }}
               align="center"
             />
