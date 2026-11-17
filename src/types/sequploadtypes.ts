@@ -46,8 +46,6 @@ const validFormatsPerClass: Record<string, Record<string, string>> = {
     '.ffn': 'application/x-gzip',
     '.ffn.gz': 'application/x-gzip',
     '.ffn.bz2': 'application/x-gzip',
-    '.fast.gz': 'application/x-gzip',
-    '.fast.bz2': 'application/x-gzip',
   },
 };
 
