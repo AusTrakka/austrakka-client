@@ -59,7 +59,6 @@ export interface OrgDescriptor {
 }
 
 export enum SkipForce {
-  None = '',
   Skip = 'skip',
   Force = 'overwrite',
 }
