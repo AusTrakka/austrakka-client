@@ -123,7 +123,15 @@ function MapDetail(props: MapDetailProps) {
         setNoSupportedMapsError(false);
         const selectionIsValid = selectedMap !== null && visibleKeys.includes(selectedMap);
         if (!selectionIsValid) {
-          setSelectedMap(visibleSolo[0] ?? visibleGrouped[0]);
+          if (visibleSolo.length === 1) {
+            setSelectedMap(visibleSolo[0]);
+          } else if (visibleGrouped.length === 1) {
+            setSelectedMap(visibleGrouped[0]);
+          } else if (visibleKeys.includes('WORLD')) {
+            setSelectedMap('WORLD');
+          } else {
+            setSelectedMap(visibleKeys[0]);
+          }
         }
       }
     }
