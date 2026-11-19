@@ -14,6 +14,7 @@ import 'dayjs/locale/en-gb';
 import { AppContainer, CompactModeProvider } from './app/CompactModeContext';
 import muiTheme from './assets/themes/theme';
 import Users from './components/Admin/Users';
+import Announcements from './components/Announcements/Announcements';
 import UserDashboard from './components/Dashboards/UserDashboard/UserDashboard';
 import Fields from './components/Fields/Fields';
 import MainMenuLayout from './components/Layouts/MainMenuLayout';
@@ -92,6 +93,7 @@ function App() {
                       <Route path="records/:seqId" element={<OrgSampleDetail />} />
                       <Route path="proformas/:proformaAbbrev" element={<ProFormaDetail />} />
                       <Route path="fields" element={<Fields />} />
+                      <Route path="announcements" element={<Announcements />} />
                       <Route path="users/:username" element={<UserDetailOverview />} />
                     </Route>
                     <Route path="*" element={<Navigate to="/" />} />

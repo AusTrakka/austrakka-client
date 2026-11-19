@@ -2,6 +2,13 @@ import type { VisChainEntry } from '../components/Common/Activity/activityViewMo
 import type { MergeAlgorithm } from '../constants/mergeAlgorithm';
 
 // These are view models; should correspond to server-side DTO.
+
+export interface Announcement {
+  users: string[];
+  subject: string;
+  body: string;
+}
+
 export interface Project {
   projectId: number;
   globalId: string;
@@ -119,6 +126,7 @@ export interface PlotListing {
 
 // may need to add the property position here perchance
 export interface Member {
+  globalId: string;
   username: string;
   roles: string[];
   position: string;
@@ -128,6 +136,7 @@ export interface Member {
   };
   displayName: string;
   contactEmail: string;
+  isAusTrakkaProcess: boolean;
 }
 
 export interface User {
