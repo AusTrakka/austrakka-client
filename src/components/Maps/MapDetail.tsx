@@ -121,10 +121,13 @@ function MapDetail(props: MapDetailProps) {
         setNoSupportedMapsError(true);
       } else {
         setNoSupportedMapsError(false);
-        if (visibleKeys.length === 1) setSelectedMap(visibleKeys[0]);
+        const selectionIsValid = selectedMap !== null && visibleKeys.includes(selectedMap);
+        if (!selectionIsValid) {
+          setSelectedMap(visibleSolo[0] ?? visibleGrouped[0]);
+        }
       }
     }
-  }, [data, setSelectedMap]);
+  }, [data, setSelectedMap, selectedMap]);
 
   useEffect(() => {
     if (data && hasCompleteData(data.loadingState) && data.fields) {
