@@ -680,7 +680,7 @@ function UploadSequences() {
             </FormControl>
             <Typography variant="body2" sx={{ marginBottom: 2, maxWidth: 400 }}>
               {selectedSkipForce === SkipForce.Force
-                ? 'For any samples with existing sequences of the same data type, disable the old files and upload the new files as replacements.'
+                ? 'For any Seq_IDs with existing files of the same sequence type, disable the old files and upload the new files as replacements.'
                 : 'Silently skip samples which already have sequences of the same data type, without displaying any errors.'}
             </Typography>
             <FormGroup>
