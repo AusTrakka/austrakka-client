@@ -50,13 +50,13 @@ function Datasets(props: DatasetProps) {
   const [rows, setRows] = useState<DataSetEntry[]>([]);
   const [openSnackbar, setOpenSnackbar] = useState(false); // State for toast
   const [openDialog, setOpenDialog] = useState(false); // State for confirmation dialog
-  const [dataSetIdToDelete, setDataSetIdToDelete] = useState<number | null>(null);
+  const [dataSetIdToDelete, setDataSetIdToDelete] = useState<string | null>(null);
   const [datasetError, setDatasetError] = useState(false);
   const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   });
   const [columns, setColumns] = useState([
-    { field: 'datasetId', header: 'Dataset ID' },
+    { field: 'globalId', header: 'Dataset ID' },
     { field: 'analysisLabel', header: 'Analysis Label' },
     { field: 'createdBy', header: 'Created By' },
     {
@@ -68,9 +68,9 @@ function Datasets(props: DatasetProps) {
   ]);
   const user: UserSliceState = useAppSelector(selectUserState);
 
-  const renderDeleteButton = (rowData: DataSetEntry, handleDeleteRow: (id: number) => void) => (
+  const renderDeleteButton = (rowData: DataSetEntry, handleDeleteRow: (string: number) => void) => (
     <IconButton
-      onClick={() => handleDeleteRow(rowData.datasetId)}
+      onClick={() => handleDeleteRow(rowData.globalId)}
       sx={{ color: 'gray' }}
       size="small"
     >
@@ -109,7 +109,7 @@ function Datasets(props: DatasetProps) {
       if (response.status !== ResponseType.Success) {
         throw new Error('Failed to disable dataset');
       }
-      const updatedData = rows.filter((entry) => entry.datasetId !== dataSetIdToDelete);
+      const updatedData = rows.filter((entry) => entry.globalId !== dataSetIdToDelete);
       setRows(updatedData);
       setOpenSnackbar(true); // Open toast on success
     } catch (error) {
@@ -132,7 +132,7 @@ function Datasets(props: DatasetProps) {
     return false;
   };
 
-  const handleDeleteRow = (row: number) => {
+  const handleDeleteRow = (row: string) => {
     setDataSetIdToDelete(row);
     setOpenDialog(true);
   };
