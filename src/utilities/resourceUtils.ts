@@ -224,7 +224,7 @@ export const getRoles = (token: string): Promise<ResponseObject<Role[]>> =>
 export const getDatasets = (projectAbbrev: string, token: string) =>
   callGET(`/api/Projects/${projectAbbrev}/active-dataset-entry-list`, token);
 
-export const disableDataset = (projectAbbrev: string, datasetId: number, token: string) =>
+export const disableDataset = (projectAbbrev: string, datasetId: string, token: string) =>
   callPATCH(`/api/Projects/${projectAbbrev}/disable-dataset/${datasetId}`, token);
 
 // Sample endpoints
