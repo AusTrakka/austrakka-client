@@ -76,7 +76,7 @@ import UploadSingleSequenceRow from './UploadSingleSequenceRow';
 // There are effectively two validation steps for sequence files:
 // 1. The FileDragDrop component validates basic properties like file size and allowed suffixes
 // 2. We attempt to parse the file list according to the sequence type, extracting Seq_IDs and e.g. pairing files
-// Either of these steps can result in a failure where where we show an error popup and clear FileDragDrop.
+// Either of these steps can result in a failure where we show an error popup and clear FileDragDrop.
 // The second validation step is handled differently (and better) if there is a supplied CSV, and will not reject
 // the files wholesale, instead basing the expected table of files on the CSV.
 
@@ -101,7 +101,7 @@ function UploadSequences() {
   const [seqUploadRows, setSeqUploadRows] = useState<SeqUploadRow[]>([]);
   const seqUploadRowStates = useMemo(() => seqUploadRows.map((sur) => sur.state), [seqUploadRows]);
   const [selectedSeqType, setSelectedSeqType] = useState<SeqType>(SeqType.FastqIllPe);
-  const [selectedSkipForce, setSelectedSkipForce] = useState<SkipForce>(SkipForce.None);
+  const [selectedSkipForce, setSelectedSkipForce] = useState<SkipForce>(SkipForce.Skip);
   const [selectedCreateSampleRecords, setSelectedCreateSampleRecords] = useState<boolean>(false);
   const [availableDataOwners, setAvailableDataOwners] = useState<string[]>([]); // Org abbreviations
   const [selectedDataOwner, setSelectedDataOwner] = useState<string | null>(null);
@@ -345,12 +345,6 @@ function UploadSequences() {
     setUseCsvFile(false);
     setCsvErrors([]);
     setSelectedSeqType(seqType);
-  };
-
-  const handleSelectSkipForce = (event: ChangeEvent<HTMLInputElement>, skipForceStr: string) => {
-    let skipForce = SkipForce.None; // the value we will use if box unchecked
-    if (event.target.checked) skipForce = getEnumByValue(SkipForce, skipForceStr) as SkipForce;
-    setSelectedSkipForce(skipForce);
   };
 
   const handleToggleCsvFile = (event: ChangeEvent<HTMLInputElement>) => {
@@ -666,52 +660,30 @@ function UploadSequences() {
                 ))}
               </Select>
             </FormControl>
-            <Typography>
-              If neither of the below options are selected, the upload will return an error for any
-              samples with existing sequences.
+            <FormControl
+              size="small"
+              sx={{ minWidth: 200, maxWidth: 400, marginTop: 1, marginBottom: 1 }}
+              variant="standard"
+            >
+              <InputLabel id="skip-force-label">Existing sequences</InputLabel>
+              <Select
+                labelId="skip-force-label"
+                id="skip-force-select"
+                name="Existing sequences"
+                value={selectedSkipForce}
+                onChange={(e) => setSelectedSkipForce(e.target.value as SkipForce)}
+                disabled={uploadInProgress()}
+              >
+                <MenuItem value={SkipForce.Skip}>Skip samples with sequences</MenuItem>
+                <MenuItem value={SkipForce.Force}>Overwrite existing sequences</MenuItem>
+              </Select>
+            </FormControl>
+            <Typography variant="body2" sx={{ marginBottom: 2, maxWidth: 400 }}>
+              {selectedSkipForce === SkipForce.Force
+                ? 'For any Seq_IDs with existing files of the same sequence type, disable the old files and upload the new files as replacements.'
+                : 'Silently skip samples which already have sequences of the same data type, without displaying any errors.'}
             </Typography>
             <FormGroup>
-              <Box key="option-skip">
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      color="secondary"
-                      checked={selectedSkipForce === SkipForce.Skip}
-                      onChange={(e) => handleSelectSkipForce(e, SkipForce.Skip)}
-                      name={SkipForce.Skip}
-                      disabled={uploadInProgress()}
-                    />
-                  }
-                  label="Skip samples with sequences"
-                />
-                <Box sx={{ paddingLeft: 4 }}>
-                  <Typography variant="body2">
-                    Silently skip samples which already have sequences of the same data type,
-                    without displaying any errors.
-                  </Typography>
-                </Box>
-              </Box>
-              <Box key="option-overwrite">
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      color="secondary"
-                      checked={selectedSkipForce === SkipForce.Force}
-                      onChange={(e) => handleSelectSkipForce(e, SkipForce.Force)}
-                      name={SkipForce.Force}
-                      disabled={uploadInProgress()}
-                    />
-                  }
-                  label="Overwrite existing sequences"
-                />
-                <Box sx={{ paddingLeft: 4 }}>
-                  <Typography variant="body2">
-                    For any samples with existing sequences of the same data type, disable the old
-                    files and upload the new files as replacements.
-                  </Typography>
-                </Box>
-              </Box>
-
               {showCsvFileUpload() ? (
                 <Box key="option-use-csv">
                   <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
