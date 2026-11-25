@@ -121,10 +121,21 @@ function MapDetail(props: MapDetailProps) {
         setNoSupportedMapsError(true);
       } else {
         setNoSupportedMapsError(false);
-        if (visibleKeys.length === 1) setSelectedMap(visibleKeys[0]);
+        const selectionIsValid = selectedMap !== null && visibleKeys.includes(selectedMap);
+        if (!selectionIsValid) {
+          if (visibleSolo.length === 1) {
+            setSelectedMap(visibleSolo[0]);
+          } else if (visibleGrouped.length === 1) {
+            setSelectedMap(visibleGrouped[0]);
+          } else if (visibleKeys.includes('WORLD')) {
+            setSelectedMap('WORLD');
+          } else {
+            setSelectedMap(visibleKeys[0]);
+          }
+        }
       }
     }
-  }, [data, setSelectedMap]);
+  }, [data, setSelectedMap, selectedMap]);
 
   useEffect(() => {
     if (data && hasCompleteData(data.loadingState) && data.fields) {
