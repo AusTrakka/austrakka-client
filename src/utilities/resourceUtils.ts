@@ -14,7 +14,6 @@ import type {
   ProjectOrganisationsPatch,
   ProjectPut,
   ProjectSummary,
-  ProjectView,
   Role,
   Tree,
   TreeVersion,
@@ -34,7 +33,6 @@ import {
   callPost,
   callPostMultipart,
   callPUT,
-  callSimpleGET,
   downloadFile,
   previewFile,
 } from './api';
@@ -132,14 +130,13 @@ export const getProformaProjects = (
 export const getProjectFields = (projectAbbrev: string, token: string) =>
   callGET(`/api/Projects/${projectAbbrev}/project-field-list`, token);
 
-export const getProjectView = (
+export const getProjectViewData = (
   projectAbbrev: string,
   token: string,
-): Promise<ResponseObject<ProjectView>> =>
-  callGET(`/api/Projects/${projectAbbrev}/project-views`, token);
-
-export const getProjectViewData = (projectAbbrev: string, token: string): Promise<Response> =>
-  callSimpleGET(`/api/Projects/${projectAbbrev}/download-project-view?datasetViewId`, token);
+): Promise<ResponseObject<Sample[]>> =>
+  callGET(`/api/Projects/${projectAbbrev}/download-project-view`, token) as Promise<
+    ResponseObject<Sample[]>
+  >;
 
 // Project dashboards endpoints
 export const getProjectDashboard = (projectAbbrev: string, token: string) =>
